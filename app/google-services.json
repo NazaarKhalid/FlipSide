@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "399455941496",
+    "project_id": "flipside-92f3f",
+    "storage_bucket": "flipside-92f3f.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:399455941496:android:81e54d4a9cff39f32f4e8d",
+        "android_client_info": {
+          "package_name": "com.example.flipside"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyD7z1ZMkpn-ABcNay95jvXy74-3ggQ4kGc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
