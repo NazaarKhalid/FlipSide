@@ -1,9 +1,9 @@
 package com.example.flipside;
 
 import android.os.Bundle;
-import android.util.Log; // Import for Logging
-import java.util.HashMap; // Import for Map
-import java.util.Map;     // Import for Map
+import android.util.Log;
+import java.util.HashMap;
+import java.util.Map;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -11,7 +11,7 @@ import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 
-// Import for Firebase
+
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
