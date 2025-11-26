@@ -8,7 +8,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Firebase Imports
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
@@ -48,7 +47,9 @@ public class SignUpActivity extends AppCompatActivity {
         });
 
         tvLoginLink.setOnClickListener(v -> {
-            Toast.makeText(SignUpActivity.this, "Login Screen coming soon!", Toast.LENGTH_SHORT).show();
+            android.content.Intent intent = new android.content.Intent(SignUpActivity.this, LoginActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 
