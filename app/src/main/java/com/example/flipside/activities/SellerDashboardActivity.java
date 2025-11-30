@@ -11,13 +11,21 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.flipside.R;
+import com.example.flipside.adapters.ProductAdapter;
+import com.example.flipside.models.Product;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.example.flipside.models.User;
 import com.example.flipside.models.Store;
 import com.example.flipside.models.SellerProfile;
+import com.google.firebase.firestore.QueryDocumentSnapshot;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SellerDashboardActivity extends AppCompatActivity {
 

@@ -109,13 +109,12 @@
                 android:layout_marginTop="24dp"
                 android:layout_marginBottom="8dp"/>
 
-            <TextView
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvProductList"
                 android:layout_width="match_parent"
-                android:layout_height="120dp"
-                android:text="(Your product list will appear here)"
-                android:gravity="center"
-                android:background="#EEEEEE"/>
-
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false"
+                android:layout_marginTop="8dp"/>
         </LinearLayout>
     </LinearLayout>
 </ScrollView>
