@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:background="#FFFFFF">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal">
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="New Product"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="20dp"/>
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="250dp"
+            android:layout_marginBottom="24dp"
+            android:background="#F0F0F0">
+
+            <ImageView
+                android:id="@+id/ivProductImage"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_camera"
+                android:padding="80dp"
+                android:alpha="0.5"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tap to select image"
+                android:layout_gravity="bottom|center"
+                android:layout_marginBottom="16dp"
+                android:textColor="#666666"/>
+        </FrameLayout>
+
+        <EditText
+            android:id="@+id/etProdName"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Product Name"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProdPrice"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Price (PKR)"
+            android:inputType="numberDecimal"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="12dp"/>
+
+        <EditText
+            android:id="@+id/etProdStock"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:hint="Stock Quantity"
+            android:inputType="number"
+            android:background="@android:drawable/edit_text"
+            android:layout_marginBottom="12dp"/>
+
+        <Spinner
+            android:id="@+id/spCategory"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:layout_marginBottom="12dp"
+            android:background="@android:drawable/btn_dropdown"/>
+
+        <EditText
+            android:id="@+id/etProdDesc"
+            android:layout_width="match_parent"
+            android:layout_height="100dp"
+            android:hint="Product Description..."
+            android:gravity="top|start"
+            android:background="@android:drawable/edit_text"
+            android:padding="8dp"
+            android:layout_marginBottom="24dp"/>
+
+        <Button
+            android:id="@+id/btnUploadProduct"
+            android:layout_width="match_parent"
+            android:layout_height="60dp"
+            android:text="Upload Product"
+            android:backgroundTint="#FF9800"
+            android:textStyle="bold"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            android:layout_marginTop="16dp"/>
+
+    </LinearLayout>
+</ScrollView>
