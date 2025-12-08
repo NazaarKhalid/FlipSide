@@ -45,7 +45,28 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
                 holder.ivImage.setImageBitmap(bitmap);
             }
         }
+
+
+        holder.itemView.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(context, com.example.flipside.activities.ProductDetailsActivity.class);
+
+
+            intent.putExtra("name", product.getName());
+            intent.putExtra("desc", product.getDescription());
+            intent.putExtra("price", product.getPrice());
+            intent.putExtra("stock", product.getStockQuantity());
+            intent.putExtra("productId", product.getProductId());
+            intent.putExtra("storeId", product.getStoreId());
+
+
+            if (product.getImagesBase64() != null && !product.getImagesBase64().isEmpty()) {
+                intent.putExtra("image", product.getImagesBase64().get(0));
+            }
+
+            context.startActivity(intent);
+        });
     }
+
 
     @Override
     public int getItemCount() {

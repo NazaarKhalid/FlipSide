@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FlipSide">
         <activity
+            android:name=".activities.ProductDetailsActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.BuyerDashboardActivity"
             android:exported="false" />
         <activity
