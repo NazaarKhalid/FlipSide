@@ -9,6 +9,7 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.flipside.R;
+import com.example.flipside.models.User;
 import com.example.flipside.models.CartItem;
 import com.example.flipside.models.Product;
 import com.example.flipside.utils.ImageUtils;
@@ -69,6 +70,35 @@ public class ProductDetailsActivity extends AppCompatActivity {
     private void addToCart(String productId, String name, double price) {
         String userId = mAuth.getCurrentUser().getUid();
 
-        Toast.makeText(this, "Added " + name + " to Cart!", Toast.LENGTH_SHORT).show();
+        Product partialProduct = new Product();
+        partialProduct.setProductId(productId);
+        partialProduct.setName(name);
+        partialProduct.setPrice(price);
+        // Add the image passed via intent so it shows in cart
+        String imageBase64 = getIntent().getStringExtra("image");
+        partialProduct.addImage(imageBase64);
+
+        CartItem newItem = new CartItem(partialProduct, 1); // Default quantity 1
+
+
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    User user = documentSnapshot.toObject(User.class);
+                    if (user != null) {
+
+                        user.getBuyerProfile().getCart().addItem(newItem);
+
+                        // Save back to Firestore
+                        db.collection("users").document(userId).set(user)
+                                .addOnSuccessListener(aVoid -> {
+                                    Toast.makeText(this, "Added to Cart!", Toast.LENGTH_SHORT).show();
+
+                                    // Navigate to Cart Activity
+                                    android.content.Intent intent = new android.content.Intent(this, CartActivity.class);
+                                    startActivity(intent);
+                                    finish();
+                                });
+                    }
+                });
     }
 }
