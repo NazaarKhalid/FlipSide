@@ -24,6 +24,14 @@
         android:layout_marginBottom="16dp"/>
 
     <Button
+        android:id="@+id/btnMarketplace"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Browse Marketplace"
+        android:backgroundTint="#2196F3"
+        android:layout_marginBottom="16dp"/>
+
+    <Button
         android:id="@+id/btnLogout"
         android:layout_width="match_parent"
         android:layout_height="60dp"
