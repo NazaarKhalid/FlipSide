@@ -1,5 +1,6 @@
 package com.example.flipside.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -61,7 +62,9 @@ public class CartActivity extends AppCompatActivity {
         loadCart();
 
         btnCheckout.setOnClickListener(v -> {
-            Toast.makeText(this, "Checkout coming in the final module!", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
+            startActivity(intent);
+
         });
     }
 
@@ -126,10 +129,10 @@ public class CartActivity extends AppCompatActivity {
 
         progressBar.setVisibility(View.VISIBLE);
         db.collection("users").document(currentUserId)
-                .set(currentUserObj) // Overwrite the user object with the new cart
+                .set(currentUserObj)
                 .addOnSuccessListener(aVoid -> {
                     progressBar.setVisibility(View.GONE);
-                    updateUI(); // Recalculate total
+                    updateUI();
                     Toast.makeText(this, "Item removed", Toast.LENGTH_SHORT).show();
                 })
                 .addOnFailureListener(e -> {

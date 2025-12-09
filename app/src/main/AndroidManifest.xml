@@ -14,6 +14,9 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.FlipSide">
         <activity
+            android:name=".activities.CheckoutActivity"
+            android:exported="false" />
+        <activity
             android:name=".activities.CartActivity"
             android:exported="false" />
         <activity
