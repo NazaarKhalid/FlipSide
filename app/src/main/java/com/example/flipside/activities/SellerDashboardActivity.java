@@ -70,6 +70,13 @@ public class SellerDashboardActivity extends AppCompatActivity {
             Intent intent = new Intent(SellerDashboardActivity.this, AddProductActivity.class);
             startActivity(intent);
         });
+
+        Button btnViewAnalytics = findViewById(R.id.btnViewAnalytics);
+
+        btnViewAnalytics.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, SellerAnalyticsActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void checkSellerStatus() {

@@ -92,6 +92,14 @@
                 android:layout_marginBottom="24dp"/>
 
             <Button
+                android:id="@+id/btnViewAnalytics"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:text="View Store Analytics"
+                android:backgroundTint="#673AB7"
+                android:layout_marginBottom="12dp"/>
+
+            <Button
                 android:id="@+id/btnAddProduct"
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
