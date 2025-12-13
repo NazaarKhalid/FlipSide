@@ -74,6 +74,12 @@ public class BuyerDashboardActivity extends AppCompatActivity {
             }
         });
 
+        Button btnOrderHistory = findViewById(R.id.btnOrderHistory);
+        btnOrderHistory.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, OrderHistoryActivity.class);
+            startActivity(intent);
+        });
+
 
         btnCatAll.setOnClickListener(v -> filterByCategory("All"));
         btnCatClothing.setOnClickListener(v -> filterByCategory("Clothing"));
