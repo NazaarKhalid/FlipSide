@@ -65,6 +65,15 @@ public class ProductDetailsActivity extends AppCompatActivity {
         }
 
         btnAddToCart.setOnClickListener(v -> addToCart(productId, name, price));
+
+        Button btnMessageSeller = findViewById(R.id.btnMessageSeller);
+        String sellerId = getIntent().getStringExtra("sellerId");
+
+        btnMessageSeller.setOnClickListener(v -> {
+            android.content.Intent intent = new android.content.Intent(this, ChatActivity.class);
+            intent.putExtra("sellerId", sellerId);
+            startActivity(intent);
+        });
     }
 
     private void addToCart(String productId, String name, double price) {

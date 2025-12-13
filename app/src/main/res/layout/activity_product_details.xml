@@ -101,6 +101,17 @@
             android:textSize="18sp"
             android:textStyle="bold"
             android:backgroundTint="#FF9800"/>
+
+        <Button
+            android:id="@+id/btnMessageSeller"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="Chat"
+            android:backgroundTint="#607D8B"
+            android:layout_marginEnd="8dp"/>
+
+
     </LinearLayout>
 
 </RelativeLayout>

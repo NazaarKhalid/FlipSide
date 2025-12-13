@@ -57,6 +57,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             intent.putExtra("stock", product.getStockQuantity());
             intent.putExtra("productId", product.getProductId());
             intent.putExtra("storeId", product.getStoreId());
+            intent.putExtra("sellerId", product.getSellerId());
 
 
             if (product.getImagesBase64() != null && !product.getImagesBase64().isEmpty()) {

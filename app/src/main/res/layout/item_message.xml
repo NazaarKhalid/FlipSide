@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="8dp">
+
+    <TextView
+        android:id="@+id/tvMessageLeft"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#E0E0E0"
+        android:padding="12dp"
+        android:text="Receiver Message"
+        android:textColor="#000000"
+        android:textSize="16sp"
+        android:visibility="gone"
+        android:layout_gravity="start"/>
+
+    <TextView
+        android:id="@+id/tvMessageRight"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#2196F3"
+        android:padding="12dp"
+        android:text="Sender Message"
+        android:textColor="#FFFFFF"
+        android:textSize="16sp"
+        android:visibility="visible"
+        android:layout_gravity="end"/>
+
+</LinearLayout>
