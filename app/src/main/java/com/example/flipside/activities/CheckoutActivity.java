@@ -7,6 +7,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,6 +18,9 @@ import com.example.flipside.models.Cart;
 import com.example.flipside.models.Order;
 import com.example.flipside.models.Payment;
 import com.example.flipside.models.User;
+import com.example.flipside.services.EasyPaisaAdapter;
+import com.example.flipside.services.IPaymentGateway;
+import com.example.flipside.services.SadaPayAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
@@ -28,6 +32,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private TextView tvFinalTotal;
     private Button btnPlaceOrder;
     private ProgressBar progressBar;
+    private RadioGroup rgPayment;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -50,7 +55,7 @@ public class CheckoutActivity extends AppCompatActivity {
         tvFinalTotal = findViewById(R.id.tvFinalTotal);
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
         progressBar = findViewById(R.id.progressBar);
-
+        rgPayment = findViewById(R.id.rgPayment);
 
         loadCartData();
 
@@ -72,7 +77,10 @@ public class CheckoutActivity extends AppCompatActivity {
                         }
                     }
                 })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error loading cart", Toast.LENGTH_SHORT).show());
+                .addOnFailureListener(e -> {
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Error loading cart", Toast.LENGTH_SHORT).show();
+                });
     }
 
     private void placeOrder() {
@@ -93,31 +101,47 @@ public class CheckoutActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnPlaceOrder.setEnabled(false);
 
+        IPaymentGateway paymentGateway;
+        String paymentMethodName;
+
+        int selectedId = rgPayment.getCheckedRadioButtonId();
+
+        if (selectedId == R.id.rbCard) {
+            paymentGateway = new SadaPayAdapter();
+            paymentMethodName = "SadaPay";
+        } else {
+            paymentGateway = new EasyPaisaAdapter();
+            paymentMethodName = "EasyPaisa";
+        }
+
+        boolean isSuccess = paymentGateway.processPayment(currentCart.getTotalAmount(), "temp_order_id");
+
+        if (!isSuccess) {
+            Toast.makeText(this, "Payment Failed via " + paymentMethodName, Toast.LENGTH_SHORT).show();
+            btnPlaceOrder.setEnabled(true);
+            progressBar.setVisibility(View.GONE);
+            return;
+        }
 
         String addressId = "addr_" + System.currentTimeMillis();
         Address shippingAddress = new Address(addressId, currentUserId, street, city, zip, true);
 
-
         String orderId = "ord_" + System.currentTimeMillis();
         Order newOrder = new Order(orderId, currentUserId, currentCart.getCartItems(), currentCart.getTotalAmount(), shippingAddress);
 
-
         String paymentId = "pay_" + System.currentTimeMillis();
-        Payment payment = new Payment(paymentId, orderId, currentCart.getTotalAmount(), "txn_simulated");
+        Payment payment = new Payment(paymentId, orderId, currentCart.getTotalAmount(), "txn_" + paymentMethodName);
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
         newOrder.setPayment(payment);
 
-
         db.collection("orders").document(orderId).set(newOrder)
                 .addOnSuccessListener(aVoid -> {
-
                     currentUserObj.getBuyerProfile().getCart().setCartItems(new ArrayList<>());
 
                     db.collection("users").document(currentUserId).set(currentUserObj)
                             .addOnSuccessListener(aVoid1 -> {
                                 progressBar.setVisibility(View.GONE);
                                 Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_LONG).show();
-
 
                                 Intent intent = new Intent(CheckoutActivity.this, BuyerDashboardActivity.class);
                                 intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
