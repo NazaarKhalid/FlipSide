@@ -9,10 +9,12 @@ public class User {
     private String email;
     private String phone;
     private String profileImageBase64;
+    private boolean isAdmin = false;
 
     private BuyerProfile buyerProfile;
     private SellerProfile sellerProfile;
     private List<Address> savedAddresses;
+
 
     public User() {
     }
@@ -40,6 +42,9 @@ public class User {
 
     public String getProfileImageBase64() { return profileImageBase64; }
     public void setProfileImageBase64(String profileImageBase64) { this.profileImageBase64 = profileImageBase64; }
+
+    public boolean isAdmin() { return isAdmin; }
+    public void setAdmin(boolean admin) { isAdmin = admin; }
 
     public BuyerProfile getBuyerProfile() { return buyerProfile; }
     public void setBuyerProfile(BuyerProfile buyerProfile) { this.buyerProfile = buyerProfile; }

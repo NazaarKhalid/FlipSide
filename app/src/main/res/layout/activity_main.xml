@@ -38,4 +38,12 @@
         android:text="Logout"
         android:backgroundTint="#F44336"/>
 
+    <Button
+        android:id="@+id/btnSupport"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Contact Support"
+        android:backgroundTint="#FF5722"
+        android:layout_marginTop="16dp"/>
+
 </LinearLayout>

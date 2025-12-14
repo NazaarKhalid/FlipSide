@@ -59,5 +59,12 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, BuyerDashboardActivity.class);
             startActivity(intent);
         });
+
+        Button btnSupport = findViewById(R.id.btnSupport);
+
+        btnSupport.setOnClickListener(v -> {
+            Intent intent = new Intent(MainActivity.this, SupportActivity.class);
+            startActivity(intent);
+        });
     }
 }
