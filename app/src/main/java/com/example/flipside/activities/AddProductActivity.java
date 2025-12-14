@@ -133,7 +133,7 @@ public class AddProductActivity extends AppCompatActivity {
 
         String imageBase64 = ImageUtils.bitmapToString(selectedBitmap);
 
-        Category category = new Category("cat_" + categoryName, categoryName, "Description for " + categoryName);
+        Category category = com.example.flipside.utils.CategoryFactory.createCategory(categoryName);
 
         String productId = db.collection("products").document().getId();
         double price = Double.parseDouble(priceStr);
