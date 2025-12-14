@@ -2,6 +2,7 @@ package com.example.flipside.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -65,6 +66,25 @@ public class MainActivity extends AppCompatActivity {
         btnSupport.setOnClickListener(v -> {
             Intent intent = new Intent(MainActivity.this, SupportActivity.class);
             startActivity(intent);
+        });
+
+        Button btnAdminPanel = findViewById(R.id.btnAdminPanel);
+
+        // check if user is admin
+        String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
+        com.google.firebase.firestore.FirebaseFirestore.getInstance()
+                .collection("users").document(uid).get()
+                .addOnSuccessListener(doc -> {
+                    if (doc.exists()) {
+                        com.example.flipside.models.User user = doc.toObject(com.example.flipside.models.User.class);
+                        if (user != null && user.isAdmin()) {
+                            btnAdminPanel.setVisibility(View.VISIBLE);
+                        }
+                    }
+                });
+
+        btnAdminPanel.setOnClickListener(v -> {
+            startActivity(new Intent(MainActivity.this, AdminDashboardActivity.class));
         });
     }
 }

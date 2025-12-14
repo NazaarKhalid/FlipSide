@@ -24,6 +24,14 @@
         android:layout_marginBottom="16dp"/>
 
     <Button
+        android:id="@+id/btnAdminPanel"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="Admin Panel"
+        android:backgroundTint="#000000"
+        android:visibility="gone" />
+
+    <Button
         android:id="@+id/btnMarketplace"
         android:layout_width="match_parent"
         android:layout_height="60dp"
