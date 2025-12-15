@@ -24,6 +24,7 @@ import com.example.flipside.services.SadaPayAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 
+
 import java.util.ArrayList;
 
 public class CheckoutActivity extends AppCompatActivity {
@@ -134,25 +135,41 @@ public class CheckoutActivity extends AppCompatActivity {
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
         newOrder.setPayment(payment);
 
-        db.collection("orders").document(orderId).set(newOrder)
+
+        com.google.firebase.firestore.WriteBatch batch = db.batch();
+
+        com.google.firebase.firestore.DocumentReference orderRef = db.collection("orders").document(orderId);
+        batch.set(orderRef, newOrder);
+
+        for (com.example.flipside.models.CartItem item : currentCart.getCartItems()) {
+            com.google.firebase.firestore.DocumentReference productRef =
+                    db.collection("products").document(item.getProduct().getProductId());
+
+
+            batch.update(productRef, "stockQuantity", com.google.firebase.firestore.FieldValue.increment(-item.getQuantity()));
+        }
+
+
+        currentUserObj.getBuyerProfile().getCart().setCartItems(new ArrayList<>());
+        com.google.firebase.firestore.DocumentReference userRef = db.collection("users").document(currentUserId);
+        batch.set(userRef, currentUserObj);
+
+
+        batch.commit()
                 .addOnSuccessListener(aVoid -> {
-                    currentUserObj.getBuyerProfile().getCart().setCartItems(new ArrayList<>());
+                    progressBar.setVisibility(View.GONE);
+                    Toast.makeText(this, "Order Placed & Stock Updated!", Toast.LENGTH_LONG).show();
 
-                    db.collection("users").document(currentUserId).set(currentUserObj)
-                            .addOnSuccessListener(aVoid1 -> {
-                                progressBar.setVisibility(View.GONE);
-                                Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_LONG).show();
-
-                                Intent intent = new Intent(CheckoutActivity.this, BuyerDashboardActivity.class);
-                                intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
-                                startActivity(intent);
-                                finish();
-                            });
+                    Intent intent = new Intent(CheckoutActivity.this, BuyerDashboardActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
+                    startActivity(intent);
+                    finish();
                 })
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     btnPlaceOrder.setEnabled(true);
-                    Toast.makeText(this, "Order Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+
     }
 }
