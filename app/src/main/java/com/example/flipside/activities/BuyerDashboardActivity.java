@@ -1,5 +1,6 @@
 package com.example.flipside.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -13,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.flipside.R;
 import com.example.flipside.adapters.ProductAdapter;
 import com.example.flipside.models.Product;
+import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
@@ -35,8 +37,17 @@ public class BuyerDashboardActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        findViewById(R.id.btnLogout).setOnClickListener(v -> {
+            com.google.firebase.auth.FirebaseAuth.getInstance().signOut();
+            android.content.Intent intent = new android.content.Intent(this, LoginActivity.class);
+            intent.addFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
+        });
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_buyer_dashboard);
+
 
         db = FirebaseFirestore.getInstance();
 
@@ -86,6 +97,7 @@ public class BuyerDashboardActivity extends AppCompatActivity {
         btnCatClothing.setOnClickListener(v -> filterByCategory("Clothing"));
         btnCatShoes.setOnClickListener(v -> filterByCategory("Shoes"));
         btnCatElec.setOnClickListener(v -> filterByCategory("Electronics"));
+
     }
 
     private void loadAllProducts() {
@@ -103,7 +115,7 @@ public class BuyerDashboardActivity extends AppCompatActivity {
                         allProductsList.add(product);
                     }
 
-                    // Initially show all
+
                     filteredList.clear();
                     filteredList.addAll(allProductsList);
                     productAdapter.notifyDataSetChanged();
@@ -115,10 +127,10 @@ public class BuyerDashboardActivity extends AppCompatActivity {
     }
 
     private void filterProducts(String text) {
-        // Use the Leaf Filter
+
         ProductFilter nameFilter = new NameFilter(text);
 
-        // Apply Filter
+
         filteredList.clear();
         filteredList.addAll(nameFilter.meetCriteria(allProductsList));
         productAdapter.notifyDataSetChanged();
@@ -129,21 +141,20 @@ public class BuyerDashboardActivity extends AppCompatActivity {
             filteredList.clear();
             filteredList.addAll(allProductsList);
         } else {
-            // DEMONSTRATING COMPOSITE (AND) LOGIC
-            // Example: If user typed "Nike" AND clicked "Shoes", we want both.
+
 
             String currentSearch = searchView.getQuery().toString();
             ProductFilter catFilter = new CategoryFilter(categoryName);
 
             if (!currentSearch.isEmpty()) {
-                // Use Composite Pattern: Filter by Name AND Category
+
                 ProductFilter nameFilter = new NameFilter(currentSearch);
                 ProductFilter compositeFilter = new AndFilter(nameFilter, catFilter);
 
                 filteredList.clear();
                 filteredList.addAll(compositeFilter.meetCriteria(allProductsList));
             } else {
-                // Just Category
+
                 filteredList.clear();
                 filteredList.addAll(catFilter.meetCriteria(allProductsList));
             }
