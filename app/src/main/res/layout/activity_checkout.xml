@@ -63,6 +63,34 @@
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:text="Shipping Method"
+            android:textStyle="bold"
+            android:layout_marginTop="16dp"/>
+
+        <RadioGroup
+            android:id="@+id/rgShipping"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbStandard"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Standard (PKR 200)"
+                android:checked="true"/>
+
+            <RadioButton
+                android:id="@+id/rbExpress"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Express (PKR 500)"
+                android:layout_marginStart="16dp"/>
+        </RadioGroup>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
             android:text="Payment Method"
             android:textStyle="bold"
             android:textSize="18sp"

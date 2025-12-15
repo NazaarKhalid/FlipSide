@@ -23,6 +23,7 @@ import com.example.flipside.services.IPaymentGateway;
 import com.example.flipside.services.SadaPayAdapter;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.example.flipside.services.strategies.*;
 
 
 import java.util.ArrayList;
@@ -34,7 +35,9 @@ public class CheckoutActivity extends AppCompatActivity {
     private Button btnPlaceOrder;
     private ProgressBar progressBar;
     private RadioGroup rgPayment;
-
+    private RadioGroup rgShipping;
+    private IShippingStrategy shippingStrategy;
+    private double finalCalculatedTotal = 0.0;
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String currentUserId;
@@ -43,6 +46,7 @@ public class CheckoutActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_checkout);
 
@@ -61,8 +65,34 @@ public class CheckoutActivity extends AppCompatActivity {
         loadCartData();
 
         btnPlaceOrder.setOnClickListener(v -> placeOrder());
-    }
 
+        rgShipping = findViewById(R.id.rgShipping);
+
+
+        shippingStrategy = new StandardShipping();
+
+
+        rgShipping.setOnCheckedChangeListener((group, checkedId) -> {
+            if (checkedId == R.id.rbExpress) {
+                shippingStrategy = new ExpressShipping();
+            } else {
+                shippingStrategy = new StandardShipping();
+            }
+            updateTotalUI();
+        });
+
+
+    }
+    private void updateTotalUI() {
+        if (currentCart != null) {
+            double cartTotal = currentCart.getTotalAmount();
+            double shippingCost = shippingStrategy.calculateShippingCost(cartTotal);
+            finalCalculatedTotal = cartTotal + shippingCost;
+
+            tvFinalTotal.setText("Total: PKR " + finalCalculatedTotal +
+                    " (Incl. " + shippingStrategy.getName() + ")");
+        }
+    }
     private void loadCartData() {
         progressBar.setVisibility(View.VISIBLE);
         db.collection("users").document(currentUserId).get()
@@ -73,7 +103,7 @@ public class CheckoutActivity extends AppCompatActivity {
                         if (currentUserObj != null) {
                             currentCart = currentUserObj.getBuyerProfile().getCart();
                             if (currentCart != null) {
-                                tvFinalTotal.setText("PKR " + currentCart.getTotalAmount());
+                                updateTotalUI();
                             }
                         }
                     }
@@ -89,7 +119,7 @@ public class CheckoutActivity extends AppCompatActivity {
         String city = etCity.getText().toString();
         String zip = etZip.getText().toString();
 
-        if (TextUtils.isEmpty(street) || TextUtils.isEmpty(city) || TextUtils.isEmpty(zip)) {
+        if (android.text.TextUtils.isEmpty(street) || android.text.TextUtils.isEmpty(city) || android.text.TextUtils.isEmpty(zip)) {
             Toast.makeText(this, "Please fill address details", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -102,20 +132,24 @@ public class CheckoutActivity extends AppCompatActivity {
         progressBar.setVisibility(View.VISIBLE);
         btnPlaceOrder.setEnabled(false);
 
-        IPaymentGateway paymentGateway;
-        String paymentMethodName;
 
+        com.example.flipside.services.IPaymentGateway paymentGateway;
+        String paymentMethodName;
         int selectedId = rgPayment.getCheckedRadioButtonId();
 
         if (selectedId == R.id.rbCard) {
-            paymentGateway = new SadaPayAdapter();
+            paymentGateway = new com.example.flipside.services.SadaPayAdapter();
             paymentMethodName = "SadaPay";
         } else {
-            paymentGateway = new EasyPaisaAdapter();
+            paymentGateway = new com.example.flipside.services.EasyPaisaAdapter();
             paymentMethodName = "EasyPaisa";
         }
 
-        boolean isSuccess = paymentGateway.processPayment(currentCart.getTotalAmount(), "temp_order_id");
+
+        String orderId = "ord_" + System.currentTimeMillis();
+
+
+        boolean isSuccess = paymentGateway.processPayment(finalCalculatedTotal, orderId);
 
         if (!isSuccess) {
             Toast.makeText(this, "Payment Failed via " + paymentMethodName, Toast.LENGTH_SHORT).show();
@@ -127,11 +161,18 @@ public class CheckoutActivity extends AppCompatActivity {
         String addressId = "addr_" + System.currentTimeMillis();
         Address shippingAddress = new Address(addressId, currentUserId, street, city, zip, true);
 
-        String orderId = "ord_" + System.currentTimeMillis();
-        Order newOrder = new Order(orderId, currentUserId, currentCart.getCartItems(), currentCart.getTotalAmount(), shippingAddress);
+
+        Order newOrder = new Order(
+                orderId,
+                currentUserId,
+                currentCart.getCartItems(),
+                finalCalculatedTotal,
+                shippingAddress
+        );
+
 
         String paymentId = "pay_" + System.currentTimeMillis();
-        Payment payment = new Payment(paymentId, orderId, currentCart.getTotalAmount(), "txn_" + paymentMethodName);
+        Payment payment = new Payment(paymentId, orderId, finalCalculatedTotal, "txn_" + paymentMethodName); // <--- LOOK HERE
         payment.setStatus(Payment.PaymentStatus.COMPLETED);
         newOrder.setPayment(payment);
 
@@ -150,7 +191,7 @@ public class CheckoutActivity extends AppCompatActivity {
         }
 
 
-        currentUserObj.getBuyerProfile().getCart().setCartItems(new ArrayList<>());
+        currentUserObj.getBuyerProfile().getCart().setCartItems(new java.util.ArrayList<>());
         com.google.firebase.firestore.DocumentReference userRef = db.collection("users").document(currentUserId);
         batch.set(userRef, currentUserObj);
 
@@ -158,7 +199,7 @@ public class CheckoutActivity extends AppCompatActivity {
         batch.commit()
                 .addOnSuccessListener(aVoid -> {
                     progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Order Placed & Stock Updated!", Toast.LENGTH_LONG).show();
+                    Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_LONG).show();
 
                     Intent intent = new Intent(CheckoutActivity.this, BuyerDashboardActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
@@ -168,8 +209,7 @@ public class CheckoutActivity extends AppCompatActivity {
                 .addOnFailureListener(e -> {
                     progressBar.setVisibility(View.GONE);
                     btnPlaceOrder.setEnabled(true);
-                    Toast.makeText(this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    Toast.makeText(this, "Order Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
-
     }
 }
