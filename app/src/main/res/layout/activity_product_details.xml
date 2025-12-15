@@ -111,6 +111,15 @@
             android:backgroundTint="#607D8B"
             android:layout_marginEnd="8dp"/>
 
+        <Button
+            android:id="@+id/btnFollowStore"
+            android:layout_width="0dp"
+            android:layout_height="60dp"
+            android:layout_weight="1"
+            android:text="Follow"
+            android:backgroundTint="#9C27B0"
+            android:layout_marginEnd="8dp"/>
+
 
     </LinearLayout>
 

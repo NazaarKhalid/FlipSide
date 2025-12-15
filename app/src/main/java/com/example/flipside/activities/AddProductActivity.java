@@ -29,6 +29,7 @@ import com.example.flipside.models.User;
 // Assuming it is in 'com.example.flipside' for now based on your older code.
 import com.example.flipside.utils.ImageUtils;
 import java.io.IOException;
+import java.util.List;
 
 public class AddProductActivity extends AppCompatActivity {
 
@@ -52,9 +53,8 @@ public class AddProductActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     imageUri = result.getData().getData();
                     try {
-                        // Convert URI to Bitmap
+
                         selectedBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                        // Show in ImageView
                         ivProductImage.setImageBitmap(selectedBitmap);
                         ivProductImage.setAlpha(1.0f);
                         ivProductImage.setPadding(0,0,0,0);
@@ -145,8 +145,29 @@ public class AddProductActivity extends AppCompatActivity {
 
         db.collection("products").document(productId).set(newProduct)
                 .addOnSuccessListener(aVoid -> {
-                    progressBar.setVisibility(View.GONE);
                     Toast.makeText(this, "Product Uploaded!", Toast.LENGTH_SHORT).show();
+
+                    db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
+                        User seller = doc.toObject(User.class);
+                        if (seller != null && seller.getSellerProfile().getStore() != null) {
+                            List<String> followers = seller.getSellerProfile().getStore().getFollowers();
+
+                            if (followers != null && !followers.isEmpty()) {
+                                for (String followerId : followers) {
+
+                                    java.util.Map<String, Object> notification = new java.util.HashMap<>();
+                                    notification.put("title", "New Product Alert!");
+                                    notification.put("message", seller.getSellerProfile().getStore().getStoreName() + " added: " + name);
+                                    notification.put("timestamp", System.currentTimeMillis());
+                                    notification.put("read", false);
+
+
+                                    db.collection("users").document(followerId)
+                                            .collection("notifications").add(notification);
+                                }
+                            }
+                        }
+                    });
                     finish();
                 })
                 .addOnFailureListener(e -> {

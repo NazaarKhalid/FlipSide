@@ -13,6 +13,7 @@ public class Store {
 
     private List<String> followerIds;
     private List<Product> productList;
+    private java.util.List<String> followers = new java.util.ArrayList<>();
 
     //empty contructor
     public Store() {
@@ -54,4 +55,13 @@ public class Store {
 
     public List<Product> getProductList() { return productList; }
     public void setProductList(List<Product> productList) { this.productList = productList; }
+
+    public java.util.List<String> getFollowers() { return followers; }
+    public void setFollowers(java.util.List<String> followers) { this.followers = followers; }
+
+    public void addFollower(String userId) {
+        if (!followers.contains(userId)) {
+            followers.add(userId);
+        }
+    }
 }

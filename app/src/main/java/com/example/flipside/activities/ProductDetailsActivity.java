@@ -28,6 +28,32 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+
+        // Inside onCreate
+        Button btnFollowStore = findViewById(R.id.btnFollowStore);
+        String storeId = getIntent().getStringExtra("storeId");
+
+        btnFollowStore.setOnClickListener(v -> {
+            String currentUserId = mAuth.getCurrentUser().getUid();
+
+
+            db.collection("users").whereEqualTo("sellerProfile.store.storeId", storeId).get()
+                    .addOnSuccessListener(snapshots -> {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots) {
+                            User sellerUser = doc.toObject(User.class);
+                            if (sellerUser != null && sellerUser.getSellerProfile().getStore() != null) {
+
+
+                                sellerUser.getSellerProfile().getStore().addFollower(currentUserId);
+
+
+                                db.collection("users").document(sellerUser.getUserId()).set(sellerUser)
+                                        .addOnSuccessListener(aVoid ->
+                                                Toast.makeText(this, "You are now following this store!", Toast.LENGTH_SHORT).show());
+                            }
+                        }
+                    });
+        });
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_product_details);
 
@@ -49,7 +75,6 @@ public class ProductDetailsActivity extends AppCompatActivity {
         int stock = getIntent().getIntExtra("stock", 0);
         String imageBase64 = getIntent().getStringExtra("image");
         String productId = getIntent().getStringExtra("productId");
-        String storeId = getIntent().getStringExtra("storeId"); // Needed for ordering later
 
 
         tvDetailName.setText(name);
@@ -83,11 +108,11 @@ public class ProductDetailsActivity extends AppCompatActivity {
         partialProduct.setProductId(productId);
         partialProduct.setName(name);
         partialProduct.setPrice(price);
-        // Add the image passed via intent so it shows in cart
+
         String imageBase64 = getIntent().getStringExtra("image");
         partialProduct.addImage(imageBase64);
 
-        CartItem newItem = new CartItem(partialProduct, 1); // Default quantity 1
+        CartItem newItem = new CartItem(partialProduct, 1);
 
 
         db.collection("users").document(userId).get()
@@ -97,12 +122,12 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
                         user.getBuyerProfile().getCart().addItem(newItem);
 
-                        // Save back to Firestore
+
                         db.collection("users").document(userId).set(user)
                                 .addOnSuccessListener(aVoid -> {
                                     Toast.makeText(this, "Added to Cart!", Toast.LENGTH_SHORT).show();
 
-                                    // Navigate to Cart Activity
+
                                     android.content.Intent intent = new android.content.Intent(this, CartActivity.class);
                                     startActivity(intent);
                                     finish();

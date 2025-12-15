@@ -18,6 +18,7 @@ import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
 import java.util.List;
+import com.example.flipside.utils.filters.*;
 
 public class BuyerDashboardActivity extends AppCompatActivity {
 
@@ -114,18 +115,12 @@ public class BuyerDashboardActivity extends AppCompatActivity {
     }
 
     private void filterProducts(String text) {
+        // Use the Leaf Filter
+        ProductFilter nameFilter = new NameFilter(text);
+
+        // Apply Filter
         filteredList.clear();
-        if (text.isEmpty()) {
-            filteredList.addAll(allProductsList);
-        } else {
-            text = text.toLowerCase();
-            for (Product product : allProductsList) {
-                if (product.getName().toLowerCase().contains(text) ||
-                        (product.getCategory() != null && product.getCategory().getName().toLowerCase().contains(text))) {
-                    filteredList.add(product);
-                }
-            }
-        }
+        filteredList.addAll(nameFilter.meetCriteria(allProductsList));
         productAdapter.notifyDataSetChanged();
     }
 
@@ -134,15 +129,25 @@ public class BuyerDashboardActivity extends AppCompatActivity {
             filteredList.clear();
             filteredList.addAll(allProductsList);
         } else {
-            filteredList.clear();
-            for (Product product : allProductsList) {
-                if (product.getCategory() != null &&
-                        product.getCategory().getName().equalsIgnoreCase(categoryName)) {
-                    filteredList.add(product);
-                }
+            // DEMONSTRATING COMPOSITE (AND) LOGIC
+            // Example: If user typed "Nike" AND clicked "Shoes", we want both.
+
+            String currentSearch = searchView.getQuery().toString();
+            ProductFilter catFilter = new CategoryFilter(categoryName);
+
+            if (!currentSearch.isEmpty()) {
+                // Use Composite Pattern: Filter by Name AND Category
+                ProductFilter nameFilter = new NameFilter(currentSearch);
+                ProductFilter compositeFilter = new AndFilter(nameFilter, catFilter);
+
+                filteredList.clear();
+                filteredList.addAll(compositeFilter.meetCriteria(allProductsList));
+            } else {
+                // Just Category
+                filteredList.clear();
+                filteredList.addAll(catFilter.meetCriteria(allProductsList));
             }
         }
         productAdapter.notifyDataSetChanged();
-        Toast.makeText(this, "Showing: " + categoryName, Toast.LENGTH_SHORT).show();
     }
 }
