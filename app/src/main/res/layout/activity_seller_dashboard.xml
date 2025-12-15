@@ -1,128 +1,64 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FFFFFF">
+    android:orientation="vertical"
+    android:padding="20dp"
+    android:background="#F5F5F5">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical">
+        android:orientation="horizontal"
+        android:layout_marginBottom="20dp">
 
-        <ProgressBar
-            android:id="@+id/progressBar"
+        <TextView
+            android:id="@+id/tvStoreName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="My Store"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"/>
+
+        <Button
+            android:id="@+id/btnLogout"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="center"
-            android:layout_marginTop="50dp"/>
-
-        <LinearLayout
-            android:id="@+id/layoutCreateStore"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone"
-            android:padding="16dp"
-            android:background="#F5F5F5">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Become a Seller"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="#333333"
-                android:layout_marginBottom="16dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Store Name"
-                android:layout_marginBottom="4dp"/>
-
-            <EditText
-                android:id="@+id/etStoreName"
-                android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:hint="e.g., Cool Kicks"
-                android:background="@android:drawable/edit_text"
-                android:paddingStart="12dp"
-                android:layout_marginBottom="12dp"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Description"
-                android:layout_marginBottom="4dp"/>
-
-            <EditText
-                android:id="@+id/etStoreDesc"
-                android:layout_width="match_parent"
-                android:layout_height="80dp"
-                android:hint="Tell us about your shop..."
-                android:background="@android:drawable/edit_text"
-                android:gravity="top|start"
-                android:padding="12dp"
-                android:layout_marginBottom="20dp"/>
-
-            <Button
-                android:id="@+id/btnCreateStore"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="Create My Store"
-                android:backgroundTint="#2196F3"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:id="@+id/layoutDashboard"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
-
-            <TextView
-                android:id="@+id/tvStoreTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="My Store"
-                android:textSize="28sp"
-                android:textStyle="bold"
-                android:textColor="#333333"
-                android:layout_marginBottom="24dp"/>
-
-            <Button
-                android:id="@+id/btnViewAnalytics"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="View Store Analytics"
-                android:backgroundTint="#673AB7"
-                android:layout_marginBottom="12dp"/>
-
-            <Button
-                android:id="@+id/btnAddProduct"
-                android:layout_width="match_parent"
-                android:layout_height="60dp"
-                android:text="+ Upload New Product"
-                android:backgroundTint="#FF9800"
-                android:textSize="18sp"
-                android:textStyle="bold"/>
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Your Products"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:layout_marginTop="24dp"
-                android:layout_marginBottom="8dp"/>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvProductList"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:layout_marginTop="8dp"/>
-        </LinearLayout>
+            android:layout_height="40dp"
+            android:text="Logout"
+            android:backgroundTint="#F44336"
+            android:textSize="12sp"/>
     </LinearLayout>
-</ScrollView>
+
+    <Button
+        android:id="@+id/btnViewAnalytics"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="View Store Analytics"
+        android:backgroundTint="#673AB7"
+        android:layout_marginBottom="12dp"/>
+
+    <Button
+        android:id="@+id/btnAddProduct"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="+ Add New Product"
+        android:backgroundTint="#4CAF50"
+        android:layout_marginBottom="20dp"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Your Products"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="10dp"/>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvSellerProducts"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"/>
+
+</LinearLayout>

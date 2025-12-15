@@ -2,12 +2,7 @@ package com.example.flipside.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
@@ -17,11 +12,9 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.example.flipside.R;
 import com.example.flipside.adapters.ProductAdapter;
 import com.example.flipside.models.Product;
+import com.example.flipside.models.User;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.flipside.models.User;
-import com.example.flipside.models.Store;
-import com.example.flipside.models.SellerProfile;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 
 import java.util.ArrayList;
@@ -29,14 +22,15 @@ import java.util.List;
 
 public class SellerDashboardActivity extends AppCompatActivity {
 
-    private LinearLayout layoutCreateStore, layoutDashboard;
-    private EditText etStoreName, etStoreDesc;
-    private Button btnCreateStore, btnAddProduct;
-    private TextView tvStoreTitle;
-    private ProgressBar progressBar;
+    private TextView tvStoreName;
+    private Button btnAddProduct, btnViewAnalytics, btnLogout;
+    private RecyclerView rvSellerProducts;
 
-    private FirebaseAuth mAuth;
+    private ProductAdapter productAdapter;
+    private List<Product> productList;
+
     private FirebaseFirestore db;
+    private FirebaseAuth mAuth;
     private String currentUserId;
 
     @Override
@@ -44,95 +38,74 @@ public class SellerDashboardActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_seller_dashboard);
 
-        mAuth = FirebaseAuth.getInstance();
         db = FirebaseFirestore.getInstance();
-
-        if (mAuth.getCurrentUser() == null) {
-            finish();
-            return;
-        }
+        mAuth = FirebaseAuth.getInstance();
         currentUserId = mAuth.getCurrentUser().getUid();
 
-        layoutCreateStore = findViewById(R.id.layoutCreateStore);
-        layoutDashboard = findViewById(R.id.layoutDashboard);
-        etStoreName = findViewById(R.id.etStoreName);
-        etStoreDesc = findViewById(R.id.etStoreDesc);
-        btnCreateStore = findViewById(R.id.btnCreateStore);
+        tvStoreName = findViewById(R.id.tvStoreName);
         btnAddProduct = findViewById(R.id.btnAddProduct);
-        tvStoreTitle = findViewById(R.id.tvStoreTitle);
-        progressBar = findViewById(R.id.progressBar);
+        btnViewAnalytics = findViewById(R.id.btnViewAnalytics);
+        btnLogout = findViewById(R.id.btnLogout);
+        rvSellerProducts = findViewById(R.id.rvSellerProducts);
 
-        checkSellerStatus();
+        rvSellerProducts.setLayoutManager(new LinearLayoutManager(this));
+        productList = new ArrayList<>();
 
-        btnCreateStore.setOnClickListener(v -> createStore());
+        productAdapter = new ProductAdapter(this, productList, true);
+        rvSellerProducts.setAdapter(productAdapter);
+
+        loadStoreInfo();
+        loadSellerProducts();
 
         btnAddProduct.setOnClickListener(v -> {
             Intent intent = new Intent(SellerDashboardActivity.this, AddProductActivity.class);
             startActivity(intent);
         });
 
-        Button btnViewAnalytics = findViewById(R.id.btnViewAnalytics);
-
         btnViewAnalytics.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(this, SellerAnalyticsActivity.class);
+            Intent intent = new Intent(SellerDashboardActivity.this, SellerAnalyticsActivity.class);
             startActivity(intent);
+        });
+
+        btnLogout.setOnClickListener(v -> {
+            mAuth.signOut();
+            Intent intent = new Intent(SellerDashboardActivity.this, LoginActivity.class);
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+            finish();
         });
     }
 
-    private void checkSellerStatus() {
-        progressBar.setVisibility(View.VISIBLE);
+    @Override
+    protected void onResume() {
+        super.onResume();
+        loadSellerProducts();
+    }
 
+    private void loadStoreInfo() {
         db.collection("users").document(currentUserId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    progressBar.setVisibility(View.GONE);
-
                     if (documentSnapshot.exists()) {
                         User user = documentSnapshot.toObject(User.class);
-
-                        if (user != null && user.isSeller()) {
-                            layoutDashboard.setVisibility(View.VISIBLE);
-                            layoutCreateStore.setVisibility(View.GONE);
-
-                            if (user.getSellerProfile() != null && user.getSellerProfile().getStore() != null) {
-                                tvStoreTitle.setText(user.getSellerProfile().getStore().getStoreName());
-                            }
-                        } else {
-                            layoutCreateStore.setVisibility(View.VISIBLE);
-                            layoutDashboard.setVisibility(View.GONE);
+                        if (user != null && user.getSellerProfile() != null && user.getSellerProfile().getStore() != null) {
+                            tvStoreName.setText(user.getSellerProfile().getStore().getStoreName());
                         }
                     }
-                })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
-    private void createStore() {
-        String name = etStoreName.getText().toString().trim();
-        String desc = etStoreDesc.getText().toString().trim();
-
-        if (TextUtils.isEmpty(name)) {
-            etStoreName.setError("Store Name Required");
-            return;
-        }
-
-        progressBar.setVisibility(View.VISIBLE);
-
-        String storeId = "store_" + currentUserId;
-        Store newStore = new Store(storeId, currentUserId, name, desc, "");
-
-        SellerProfile newSellerProfile = new SellerProfile(currentUserId, currentUserId, newStore);
-
-        db.collection("users").document(currentUserId)
-                .update("sellerProfile", newSellerProfile)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Store Created Successfully!", Toast.LENGTH_SHORT).show();
-                    recreate();
+    private void loadSellerProducts() {
+        db.collection("products")
+                .whereEqualTo("sellerId", currentUserId)
+                .get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    productList.clear();
+                    for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
+                        Product product = doc.toObject(Product.class);
+                        productList.add(product);
+                    }
+                    productAdapter.notifyDataSetChanged();
                 })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Failed to create store: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
+                .addOnFailureListener(e -> Toast.makeText(this, "Error loading products", Toast.LENGTH_SHORT).show());
     }
 }

@@ -11,51 +11,87 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp">
-
-        <ImageView
-            android:id="@+id/ivItemImage"
-            android:layout_width="80dp"
-            android:layout_height="80dp"
-            android:scaleType="centerCrop"
-            android:background="#EEEEEE"
-            android:src="@android:drawable/ic_menu_gallery"/>
+        android:orientation="vertical">
 
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp"
-            android:layout_gravity="center_vertical">
+            android:orientation="horizontal"
+            android:padding="12dp">
 
-            <TextView
-                android:id="@+id/tvItemName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Product Name"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="#000000"/>
+            <ImageView
+                android:id="@+id/ivItemImage"
+                android:layout_width="80dp"
+                android:layout_height="80dp"
+                android:scaleType="centerCrop"
+                android:background="#EEEEEE"
+                android:src="@android:drawable/ic_menu_gallery"/>
 
-            <TextView
-                android:id="@+id/tvItemPrice"
-                android:layout_width="wrap_content"
+            <LinearLayout
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="PKR 0.0"
-                android:textSize="16sp"
-                android:textColor="#4CAF50"
-                android:layout_marginTop="4dp"/>
+                android:layout_weight="1"
+                android:orientation="vertical"
+                android:layout_marginStart="16dp"
+                android:layout_gravity="center_vertical">
 
-            <TextView
-                android:id="@+id/tvItemStock"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Stock: 0"
-                android:textSize="14sp"
-                android:textColor="#757575"
-                android:layout_marginTop="2dp"/>
+                <TextView
+                    android:id="@+id/tvItemName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Product Name"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#000000"/>
+
+                <TextView
+                    android:id="@+id/tvItemPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PKR 0.0"
+                    android:textSize="16sp"
+                    android:textColor="#4CAF50"
+                    android:layout_marginTop="4dp"/>
+
+                <TextView
+                    android:id="@+id/tvItemStock"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Stock: 0"
+                    android:textSize="14sp"
+                    android:textColor="#757575"
+                    android:layout_marginTop="2dp"/>
+            </LinearLayout>
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutSellerActions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:background="#F5F5F5"
+            android:padding="8dp"
+            android:visibility="gone">
+
+            <Button
+                android:id="@+id/btnEditProduct"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Edit"
+                android:textSize="12sp"
+                android:backgroundTint="#2196F3"
+                android:layout_marginEnd="4dp"/>
+
+            <Button
+                android:id="@+id/btnDeleteProduct"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:text="Delete"
+                android:textSize="12sp"
+                android:backgroundTint="#F44336"
+                android:layout_marginStart="4dp"/>
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
