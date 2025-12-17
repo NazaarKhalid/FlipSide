@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:id="@+id/grp_categories">
+        <item android:title="Browse Categories">
+            <menu>
+                <item android:id="@+id/cat_clothing" android:title="Clothing" />
+                <item android:id="@+id/cat_shoes" android:title="Shoes" />
+                <item android:id="@+id/cat_electronics" android:title="Electronics" />
+            </menu>
+        </item>
+    </group>
+
+    <item android:title="Account Actions">
+        <menu>
+            <item
+                android:id="@+id/menu_settings"
+                android:icon="@drawable/ic_settings"
+                android:title="Settings"/>
+            <item
+                android:id="@+id/menu_logout"
+                android:icon="@drawable/ic_logout"
+                android:title="Logout"/>
+        </menu>
+    </item>
+</menu>

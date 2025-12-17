@@ -9,13 +9,16 @@ public class User {
     private String email;
     private String phone;
     private String profileImageBase64;
+
+    private String userType;
+
     private boolean isAdmin = false;
 
     private BuyerProfile buyerProfile;
     private SellerProfile sellerProfile;
     private List<Address> savedAddresses;
 
-
+    // Empty constructor for Firebase
     public User() {
     }
 
@@ -26,7 +29,10 @@ public class User {
         this.phone = phone;
         this.profileImageBase64 = "";
         this.savedAddresses = new ArrayList<>();
+        this.userType = "Buyer";
     }
+
+    // --- GETTERS AND SETTERS ---
 
     public String getUserId() { return userId; }
     public void setUserId(String userId) { this.userId = userId; }
@@ -43,6 +49,8 @@ public class User {
     public String getProfileImageBase64() { return profileImageBase64; }
     public void setProfileImageBase64(String profileImageBase64) { this.profileImageBase64 = profileImageBase64; }
 
+    public String getUserType() { return userType; }
+    public void setUserType(String userType) { this.userType = userType; }
     public boolean isAdmin() { return isAdmin; }
     public void setAdmin(boolean admin) { isAdmin = admin; }
 

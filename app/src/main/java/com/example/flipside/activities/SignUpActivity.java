@@ -1,5 +1,6 @@
 package com.example.flipside.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.view.View;
@@ -9,12 +10,12 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.example.flipside.R;
+import com.example.flipside.models.BuyerProfile;
+import com.example.flipside.models.User;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.flipside.models.User;
-import com.example.flipside.models.BuyerProfile;
 
 public class SignUpActivity extends AppCompatActivity {
 
@@ -40,15 +41,10 @@ public class SignUpActivity extends AppCompatActivity {
         btnSignUp = findViewById(R.id.btnSignUp);
         tvLoginLink = findViewById(R.id.tvLoginLink);
 
-        btnSignUp.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                registerUser();
-            }
-        });
+        btnSignUp.setOnClickListener(v -> registerUser());
 
         tvLoginLink.setOnClickListener(v -> {
-            android.content.Intent intent = new android.content.Intent(SignUpActivity.this, LoginActivity.class);
+            Intent intent = new Intent(SignUpActivity.this, LoginActivity.class);
             startActivity(intent);
             finish();
         });
@@ -70,12 +66,17 @@ public class SignUpActivity extends AppCompatActivity {
             return;
         }
 
+        btnSignUp.setEnabled(false);
+        btnSignUp.setText("Creating Account...");
+
         mAuth.createUserWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
                         FirebaseUser firebaseUser = mAuth.getCurrentUser();
                         saveUserToFirestore(firebaseUser.getUid(), name, email, phone);
                     } else {
+                        btnSignUp.setEnabled(true);
+                        btnSignUp.setText("Sign Up");
                         Toast.makeText(SignUpActivity.this, "Registration Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
                     }
                 });
@@ -84,15 +85,25 @@ public class SignUpActivity extends AppCompatActivity {
     private void saveUserToFirestore(String uid, String name, String email, String phone) {
         User newUser = new User(uid, name, email, phone);
 
+        // IMPORTANT: Set User Type to "Buyer" so LoginActivity knows where to route later
+        newUser.setUserType("Buyer");
+
         BuyerProfile defaultBuyerProfile = new BuyerProfile(uid, uid);
         newUser.setBuyerProfile(defaultBuyerProfile);
 
         db.collection("users").document(uid).set(newUser)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(SignUpActivity.this, "Account Created Successfully!", Toast.LENGTH_SHORT).show();
+
+                    // FIX: Route to Dashboard instead of just closing
+                    Intent intent = new Intent(SignUpActivity.this, BuyerDashboardActivity.class);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                 })
                 .addOnFailureListener(e -> {
+                    btnSignUp.setEnabled(true);
+                    btnSignUp.setText("Sign Up");
                     Toast.makeText(SignUpActivity.this, "Failed to save profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }

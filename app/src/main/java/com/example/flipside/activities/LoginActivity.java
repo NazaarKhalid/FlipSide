@@ -12,6 +12,8 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.flipside.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.DocumentSnapshot;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -20,6 +22,7 @@ public class LoginActivity extends AppCompatActivity {
     private TextView tvRegisterLink;
 
     private FirebaseAuth mAuth;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,26 +30,19 @@ public class LoginActivity extends AppCompatActivity {
         setContentView(R.layout.activity_login);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
 
         etLoginEmail = findViewById(R.id.etLoginEmail);
         etLoginPassword = findViewById(R.id.etLoginPassword);
         btnLogin = findViewById(R.id.btnLogin);
         tvRegisterLink = findViewById(R.id.tvRegisterLink);
 
-        btnLogin.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                loginUser();
-            }
-        });
+        btnLogin.setOnClickListener(v -> loginUser());
 
-        tvRegisterLink.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
-                startActivity(intent);
-                finish();
-            }
+        tvRegisterLink.setOnClickListener(v -> {
+            Intent intent = new Intent(LoginActivity.this, SignUpActivity.class);
+            startActivity(intent);
+            finish();
         });
     }
 
@@ -59,17 +55,51 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        // Disable button to prevent double clicks
+        btnLogin.setEnabled(false);
+        btnLogin.setText("Logging in...");
+
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        Toast.makeText(LoginActivity.this, "Login Successful!", Toast.LENGTH_SHORT).show();
+                        checkUserRoleAndRedirect();
+                    } else {
+                        btnLogin.setEnabled(true);
+                        btnLogin.setText("Login");
+                        Toast.makeText(LoginActivity.this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                    }
+                });
+    }
 
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+    private void checkUserRoleAndRedirect() {
+        String uid = mAuth.getCurrentUser().getUid();
+
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        // Check the "userType" field to decide where to go
+                        String userType = documentSnapshot.getString("userType");
+
+                        Intent intent;
+                        if ("Seller".equalsIgnoreCase(userType)) {
+                            intent = new Intent(LoginActivity.this, SellerDashboardActivity.class);
+                        } else {
+                            // Default to Buyer Dashboard for Buyers and others
+                            intent = new Intent(LoginActivity.this, BuyerDashboardActivity.class);
+                        }
+
+                        // Clear the back stack so they can't go back to Login
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     } else {
-                        Toast.makeText(LoginActivity.this, "Login Failed: " + task.getException().getMessage(), Toast.LENGTH_LONG).show();
+                        btnLogin.setEnabled(true);
+                        Toast.makeText(LoginActivity.this, "User profile not found!", Toast.LENGTH_SHORT).show();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    btnLogin.setEnabled(true);
+                    Toast.makeText(LoginActivity.this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 }
