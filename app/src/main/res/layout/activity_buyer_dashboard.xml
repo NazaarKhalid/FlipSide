@@ -1,107 +1,174 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.drawerlayout.widget.DrawerLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/drawer_layout"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp"
-    android:background="#F5F5F5">
+    tools:context=".activities.BuyerDashboardActivity">
 
-    <Button
-        android:id="@+id/btnLogout"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="Logout"
-        android:backgroundTint="#F44336"
-        android:textColor="#FFFFFF"
-        android:layout_gravity="end"
-        android:layout_margin="10dp"/>
-
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Marketplace"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
-        android:layout_marginBottom="16dp"/>
-
-    <androidx.appcompat.widget.SearchView
-        android:id="@+id/searchView"
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:drawable/edit_text"
-        android:queryHint="Search products..."
-        android:iconifiedByDefault="false"
-        android:layout_marginBottom="12dp"/>
+        android:layout_height="match_parent"
+        android:background="@color/beige_background">
 
-    <HorizontalScrollView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:scrollbars="none"
-        android:layout_marginBottom="12dp">
-
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvLogo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:text="FlipSide"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@color/purple_700"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
 
-            <Button
-                android:id="@+id/btnCatAll"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="All"
-                android:textSize="12sp"
-                android:layout_marginEnd="8dp"/>
+        <LinearLayout
+            android:id="@+id/rowSearch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingHorizontal="16dp"
+            android:layout_marginTop="12dp"
+            app:layout_constraintTop_toBottomOf="@id/tvLogo">
 
-            <Button
-                android:id="@+id/btnCatClothing"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Clothing"
-                android:textSize="12sp"
-                android:backgroundTint="#CCCCCC"
-                android:layout_marginEnd="8dp"/>
+            <ImageView
+                android:id="@+id/ivMenu"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_menu"
+                app:tint="@color/purple_700"
+                android:clickable="true"
+                android:focusable="true"/>
 
-            <Button
-                android:id="@+id/btnCatShoes"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Shoes"
-                android:textSize="12sp"
-                android:backgroundTint="#CCCCCC"
-                android:layout_marginEnd="8dp"/>
+            <androidx.cardview.widget.CardView
+                android:layout_width="0dp"
+                android:layout_height="45dp"
+                android:layout_weight="1"
+                android:layout_marginHorizontal="12dp"
+                app:cardCornerRadius="25dp"
+                app:cardElevation="0dp"
+                app:cardBackgroundColor="@color/white">
 
-            <Button
-                android:id="@+id/btnCatElec"
-                android:layout_width="wrap_content"
-                android:layout_height="40dp"
-                android:text="Electronics"
-                android:textSize="12sp"
-                android:backgroundTint="#CCCCCC"
-                android:layout_marginEnd="8dp"/>
+                <androidx.appcompat.widget.SearchView
+                    android:id="@+id/searchView"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    app:iconifiedByDefault="false"
+                    app:queryBackground="@android:color/transparent"
+                    app:queryHint="Search items..." />
+            </androidx.cardview.widget.CardView>
 
+            <ImageView
+                android:id="@+id/btnCart"
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:src="@drawable/ic_cart"
+                app:tint="@color/purple_700"
+                android:clickable="true"
+                android:focusable="true"/>
         </LinearLayout>
-    </HorizontalScrollView>
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvMarketplace"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"/>
+        <HorizontalScrollView
+            android:id="@+id/scrollFilters"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:paddingHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            app:layout_constraintTop_toBottomOf="@id/rowSearch">
 
-    <ProgressBar
-        android:id="@+id/progressBar"
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/btnCatAll"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="All Items"
+                    android:backgroundTint="@color/purple_700"
+                    android:textColor="@color/white"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/btnCatClothing"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Clothing"
+                    android:backgroundTint="@color/white"
+                    android:textColor="@color/purple_700"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/btnCatShoes"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Shoes"
+                    android:backgroundTint="@color/white"
+                    android:textColor="@color/purple_700"
+                    android:layout_marginEnd="8dp"/>
+
+                <Button
+                    android:id="@+id/btnCatElec"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:text="Electronics"
+                    android:backgroundTint="@color/white"
+                    android:textColor="@color/purple_700"/>
+            </LinearLayout>
+        </HorizontalScrollView>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMarketplace"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="12dp"
+            android:paddingHorizontal="8dp"
+            android:clipToPadding="false"
+            app:layout_constraintTop_toBottomOf="@id/scrollFilters"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <ProgressBar
+            android:id="@+id/progressBar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:visibility="gone"
+            app:layout_constraintCenterIn="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
+        <com.google.android.material.bottomnavigation.BottomNavigationView
+            android:id="@+id/bottomNav"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/white"
+            app:menu="@menu/menu_bottom_nav"
+            app:itemIconTint="@color/purple_700"
+            app:itemTextColor="@color/purple_700"
+            app:labelVisibilityMode="labeled"
+            app:elevation="8dp"
+            app:layout_constraintBottom_toBottomOf="parent"/>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <com.google.android.material.navigation.NavigationView
+        android:id="@+id/nav_view_drawer"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center"
-        android:visibility="gone"/>
+        android:layout_height="match_parent"
+        android:layout_gravity="start"
+        app:menu="@menu/menu_drawer"
+        android:background="@color/beige_card"
+        app:itemIconTint="@color/purple_700"
+        app:itemTextColor="@color/text_primary"/>
 
-    <Button
-        android:id="@+id/btnOrderHistory"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="View Order History"
-        android:backgroundTint="#607D8B"
-        android:layout_marginBottom="8dp"/>
-</LinearLayout>
+</androidx.drawerlayout.widget.DrawerLayout>
