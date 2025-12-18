@@ -16,7 +16,7 @@ public class CategoryFilter implements ProductFilter {
         List<Product> filtered = new ArrayList<>();
         for (Product product : products) {
             if (product.getCategory() != null &&
-                    product.getCategory().getName().equalsIgnoreCase(categoryCriteria)) {
+                    product.getCategory().equalsIgnoreCase(categoryCriteria)) {
                 filtered.add(product);
             }
         }

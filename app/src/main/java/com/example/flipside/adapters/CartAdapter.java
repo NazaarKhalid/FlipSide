@@ -49,13 +49,16 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             holder.tvPrice.setText("PKR " + item.getProduct().getPrice());
             holder.tvQuantity.setText("x" + item.getQuantity());
 
-
-            if (item.getProduct().getImagesBase64() != null && !item.getProduct().getImagesBase64().isEmpty()) {
-                String base64 = item.getProduct().getImagesBase64().get(0);
+            String base64 = item.getProduct().getImageBase64();
+            if (base64 != null && !base64.isEmpty()) {
                 Bitmap bitmap = ImageUtils.stringToBitmap(base64);
                 if (bitmap != null) {
                     holder.ivImage.setImageBitmap(bitmap);
+                } else {
+                    holder.ivImage.setImageResource(R.drawable.ic_box);
                 }
+            } else {
+                holder.ivImage.setImageResource(R.drawable.ic_box);
             }
         }
 

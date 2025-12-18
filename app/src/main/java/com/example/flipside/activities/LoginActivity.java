@@ -84,7 +84,6 @@ public class LoginActivity extends AppCompatActivity {
                         if ("Seller".equalsIgnoreCase(userType)) {
                             intent = new Intent(LoginActivity.this, SellerDashboardActivity.class);
                         } else {
-                            // Default to Buyer Dashboard for Buyers and others
                             intent = new Intent(LoginActivity.this, BuyerDashboardActivity.class);
                         }
 

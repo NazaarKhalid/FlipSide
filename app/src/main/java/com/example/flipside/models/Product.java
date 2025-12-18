@@ -13,20 +13,15 @@ public class Product {
     private double price;
     private double deliveryCharges;
     private boolean isAvailable;
-
-    private List<String> imagesBase64;
-
-    private Category category;
-
+    private String imageBase64;
+    private String category;
     private List<String> tags;
 
-    // default constructor
     public Product() {
     }
 
-    // parameterized constructor
     public Product(String productId, String sellerId, String storeId, String name, String description,
-                   int stockQuantity, double price, double deliveryCharges, Category category) {
+                   int stockQuantity, double price, double deliveryCharges, String category) {
         this.productId = productId;
         this.sellerId = sellerId;
         this.storeId = storeId;
@@ -37,11 +32,10 @@ public class Product {
         this.deliveryCharges = deliveryCharges;
         this.category = category;
         this.isAvailable = true;
-        this.imagesBase64 = new ArrayList<>();
+        this.imageBase64 = "";
         this.tags = new ArrayList<>();
     }
 
-    // getter and setter methods
     public String getProductId() { return productId; }
     public void setProductId(String productId) { this.productId = productId; }
 
@@ -69,16 +63,15 @@ public class Product {
     public boolean isAvailable() { return isAvailable; }
     public void setAvailable(boolean available) { isAvailable = available; }
 
-    public List<String> getImagesBase64() { return imagesBase64; }
-    public void setImagesBase64(List<String> imagesBase64) { this.imagesBase64 = imagesBase64; }
+    public String getImageBase64() { return imageBase64; }
+    public void setImageBase64(String imageBase64) { this.imageBase64 = imageBase64; }
 
-    public Category getCategory() { return category; }
-    public void setCategory(Category category) { this.category = category; }
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
 
     public List<String> getTags() { return tags; }
     public void setTags(List<String> tags) { this.tags = tags; }
 
-    // helper methods
     public void toggleAvailability() {
         this.isAvailable = !this.isAvailable;
     }
@@ -86,10 +79,5 @@ public class Product {
     public void addTag(String tag) {
         if (this.tags == null) this.tags = new ArrayList<>();
         this.tags.add(tag);
-    }
-
-    public void addImage(String base64Image) {
-        if (this.imagesBase64 == null) this.imagesBase64 = new ArrayList<>();
-        this.imagesBase64.add(base64Image);
     }
 }

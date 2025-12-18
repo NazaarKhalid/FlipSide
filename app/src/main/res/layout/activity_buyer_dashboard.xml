@@ -73,75 +73,84 @@
                 android:focusable="true"/>
         </LinearLayout>
 
-        <HorizontalScrollView
-            android:id="@+id/scrollFilters"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:scrollbars="none"
-            android:paddingHorizontal="16dp"
-            android:layout_marginTop="16dp"
-            app:layout_constraintTop_toBottomOf="@id/rowSearch">
-
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal">
-
-                <Button
-                    android:id="@+id/btnCatAll"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="All Items"
-                    android:backgroundTint="@color/purple_700"
-                    android:textColor="@color/white"
-                    android:layout_marginEnd="8dp"/>
-
-                <Button
-                    android:id="@+id/btnCatClothing"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Clothing"
-                    android:backgroundTint="@color/white"
-                    android:textColor="@color/purple_700"
-                    android:layout_marginEnd="8dp"/>
-
-                <Button
-                    android:id="@+id/btnCatShoes"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Shoes"
-                    android:backgroundTint="@color/white"
-                    android:textColor="@color/purple_700"
-                    android:layout_marginEnd="8dp"/>
-
-                <Button
-                    android:id="@+id/btnCatElec"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:text="Electronics"
-                    android:backgroundTint="@color/white"
-                    android:textColor="@color/purple_700"/>
-            </LinearLayout>
-        </HorizontalScrollView>
-
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvMarketplace"
+        <androidx.core.widget.NestedScrollView
             android:layout_width="match_parent"
             android:layout_height="0dp"
-            android:layout_marginTop="12dp"
-            android:paddingHorizontal="8dp"
-            android:clipToPadding="false"
-            app:layout_constraintTop_toBottomOf="@id/scrollFilters"
-            app:layout_constraintBottom_toTopOf="@id/bottomNav"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"/>
+            android:fillViewport="true"
+            app:layout_constraintTop_toBottomOf="@id/rowSearch"
+            app:layout_constraintBottom_toTopOf="@id/bottomNav">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingBottom="20dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Clothing"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_700"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="20dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvClothing"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:paddingStart="8dp"
+                    android:clipToPadding="false"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Shoes &amp; Sneakers"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_700"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="20dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvShoes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:paddingStart="8dp"
+                    android:clipToPadding="false"/>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Electronics"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/purple_700"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="20dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvElectronics"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp"
+                    android:paddingStart="8dp"
+                    android:clipToPadding="false"/>
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
 
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            app:layout_constraintCenterIn="parent"
             app:layout_constraintTop_toTopOf="parent"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent"

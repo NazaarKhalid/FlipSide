@@ -18,18 +18,16 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Firebase & Models
-import com.example.flipside.models.Category;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.example.flipside.models.Product;
 import com.example.flipside.models.User;
-// NOTE: We need the ImageUtils class you created in Step 1 of the Firebase setup!
-// If it's in a different package (like 'utils'), import it here.
-// Assuming it is in 'com.example.flipside' for now based on your older code.
 import com.example.flipside.utils.ImageUtils;
+
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class AddProductActivity extends AppCompatActivity {
 
@@ -53,7 +51,6 @@ public class AddProductActivity extends AppCompatActivity {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
                     imageUri = result.getData().getData();
                     try {
-
                         selectedBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
                         ivProductImage.setImageBitmap(selectedBitmap);
                         ivProductImage.setAlpha(1.0f);
@@ -72,6 +69,11 @@ public class AddProductActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+
+        if (mAuth.getCurrentUser() == null) {
+            finish();
+            return;
+        }
         currentUserId = mAuth.getCurrentUser().getUid();
 
         ivProductImage = findViewById(com.example.flipside.R.id.ivProductImage);
@@ -133,41 +135,17 @@ public class AddProductActivity extends AppCompatActivity {
 
         String imageBase64 = ImageUtils.bitmapToString(selectedBitmap);
 
-        Category category = com.example.flipside.utils.CategoryFactory.createCategory(categoryName);
-
         String productId = db.collection("products").document().getId();
         double price = Double.parseDouble(priceStr);
         int stock = Integer.parseInt(stockStr);
 
-        Product newProduct = new Product(productId, currentUserId, myStoreId, name, desc, stock, price, 0.0, category);
-
-        newProduct.addImage(imageBase64);
+        Product newProduct = new Product(productId, currentUserId, myStoreId, name, desc, stock, price, 0.0, categoryName);
+        newProduct.setImageBase64(imageBase64);
 
         db.collection("products").document(productId).set(newProduct)
                 .addOnSuccessListener(aVoid -> {
                     Toast.makeText(this, "Product Uploaded!", Toast.LENGTH_SHORT).show();
-
-                    db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
-                        User seller = doc.toObject(User.class);
-                        if (seller != null && seller.getSellerProfile().getStore() != null) {
-                            List<String> followers = seller.getSellerProfile().getStore().getFollowers();
-
-                            if (followers != null && !followers.isEmpty()) {
-                                for (String followerId : followers) {
-
-                                    java.util.Map<String, Object> notification = new java.util.HashMap<>();
-                                    notification.put("title", "New Product Alert!");
-                                    notification.put("message", seller.getSellerProfile().getStore().getStoreName() + " added: " + name);
-                                    notification.put("timestamp", System.currentTimeMillis());
-                                    notification.put("read", false);
-
-
-                                    db.collection("users").document(followerId)
-                                            .collection("notifications").add(notification);
-                                }
-                            }
-                        }
-                    });
+                    sendNotifications(name);
                     finish();
                 })
                 .addOnFailureListener(e -> {
@@ -175,5 +153,27 @@ public class AddProductActivity extends AppCompatActivity {
                     btnUploadProduct.setEnabled(true);
                     Toast.makeText(this, "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
+    }
+
+    private void sendNotifications(String productName) {
+        db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
+            User seller = doc.toObject(User.class);
+            if (seller != null && seller.getSellerProfile().getStore() != null) {
+                List<String> followers = seller.getSellerProfile().getStore().getFollowers();
+
+                if (followers != null && !followers.isEmpty()) {
+                    for (String followerId : followers) {
+                        Map<String, Object> notification = new HashMap<>();
+                        notification.put("title", "New Product Alert!");
+                        notification.put("message", seller.getSellerProfile().getStore().getStoreName() + " added: " + productName);
+                        notification.put("timestamp", System.currentTimeMillis());
+                        notification.put("read", false);
+
+                        db.collection("users").document(followerId)
+                                .collection("notifications").add(notification);
+                    }
+                }
+            }
+        });
     }
 }

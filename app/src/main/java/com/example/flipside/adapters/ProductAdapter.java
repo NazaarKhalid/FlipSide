@@ -30,14 +30,12 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
     private List<Product> productList;
     private boolean isSellerMode;
 
-    // Constructor updated to accept "isSellerMode"
     public ProductAdapter(Context context, List<Product> productList, boolean isSellerMode) {
         this.context = context;
         this.productList = productList;
         this.isSellerMode = isSellerMode;
     }
 
-    // Constructor overload for backward compatibility (defaults to false)
     public ProductAdapter(Context context, List<Product> productList) {
         this(context, productList, false);
     }
@@ -54,57 +52,56 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
         Product product = productList.get(position);
         holder.tvName.setText(product.getName());
         holder.tvPrice.setText("PKR " + product.getPrice());
-        holder.tvStock.setText("Stock: " + product.getStockQuantity());
 
-        if (product.getImagesBase64() != null && !product.getImagesBase64().isEmpty()) {
-            Bitmap bitmap = ImageUtils.stringToBitmap(product.getImagesBase64().get(0));
-            if (bitmap != null) holder.ivImage.setImageBitmap(bitmap);
+        if (holder.tvStock != null) {
+            holder.tvStock.setText("Stock: " + product.getStockQuantity());
         }
 
+        String base64Image = product.getImageBase64();
+        if (base64Image != null && !base64Image.isEmpty()) {
+            Bitmap bitmap = ImageUtils.stringToBitmap(base64Image);
+            if (bitmap != null) {
+                holder.ivImage.setImageBitmap(bitmap);
+            } else {
+                holder.ivImage.setImageResource(R.drawable.ic_box);
+            }
+        } else {
+            holder.ivImage.setImageResource(R.drawable.ic_box);
+        }
 
         if (isSellerMode) {
-            holder.layoutActions.setVisibility(View.VISIBLE);
+            if (holder.layoutActions != null) {
+                holder.layoutActions.setVisibility(View.VISIBLE);
 
-            holder.btnEdit.setOnClickListener(v -> {
-                Intent intent = new Intent(context, EditProductActivity.class);
-                intent.putExtra("productId", product.getProductId());
-                intent.putExtra("name", product.getName());
-                intent.putExtra("price", product.getPrice());
-                intent.putExtra("stock", product.getStockQuantity());
-                context.startActivity(intent);
-            });
+                holder.btnEdit.setOnClickListener(v -> {
+                    Intent intent = new Intent(context, EditProductActivity.class);
+                    intent.putExtra("productId", product.getProductId());
+                    intent.putExtra("name", product.getName());
+                    intent.putExtra("price", product.getPrice());
+                    intent.putExtra("stock", product.getStockQuantity());
+                    context.startActivity(intent);
+                });
 
-
-            holder.btnDelete.setOnClickListener(v -> {
-                new AlertDialog.Builder(context)
-                        .setTitle("Delete Product")
-                        .setMessage("Are you sure?")
-                        .setPositiveButton("Yes", (dialog, which) -> deleteProduct(product.getProductId(), position))
-                        .setNegativeButton("No", null)
-                        .show();
-            });
-
-
-            holder.itemView.setOnClickListener(null);
-
+                holder.btnDelete.setOnClickListener(v -> {
+                    new AlertDialog.Builder(context)
+                            .setTitle("Delete Product")
+                            .setMessage("Are you sure?")
+                            .setPositiveButton("Yes", (dialog, which) -> deleteProduct(product.getProductId(), position))
+                            .setNegativeButton("No", null)
+                            .show();
+                });
+            }
         } else {
-            holder.layoutActions.setVisibility(View.GONE);
-
-            holder.itemView.setOnClickListener(v -> {
-                Intent intent = new Intent(context, ProductDetailsActivity.class);
-                intent.putExtra("name", product.getName());
-                intent.putExtra("desc", product.getDescription());
-                intent.putExtra("price", product.getPrice());
-                intent.putExtra("stock", product.getStockQuantity());
-                intent.putExtra("productId", product.getProductId());
-                intent.putExtra("storeId", product.getStoreId());
-                intent.putExtra("sellerId", product.getSellerId());
-                if (product.getImagesBase64() != null && !product.getImagesBase64().isEmpty()) {
-                    intent.putExtra("image", product.getImagesBase64().get(0));
-                }
-                context.startActivity(intent);
-            });
+            if (holder.layoutActions != null) {
+                holder.layoutActions.setVisibility(View.GONE);
+            }
         }
+
+        holder.itemView.setOnClickListener(v -> {
+            Intent intent = new Intent(context, ProductDetailsActivity.class);
+            intent.putExtra("product_id", product.getProductId());
+            context.startActivity(intent);
+        });
     }
 
     private void deleteProduct(String productId, int position) {
@@ -132,7 +129,7 @@ public class ProductAdapter extends RecyclerView.Adapter<ProductAdapter.ProductV
             super(itemView);
             tvName = itemView.findViewById(R.id.tvItemName);
             tvPrice = itemView.findViewById(R.id.tvItemPrice);
-            tvStock = itemView.findViewById(R.id.tvItemStock);
+            try { tvStock = itemView.findViewById(R.id.tvItemStock); } catch (Exception e) {}
             ivImage = itemView.findViewById(R.id.ivItemImage);
             layoutActions = itemView.findViewById(R.id.layoutSellerActions);
             btnEdit = itemView.findViewById(R.id.btnEditProduct);

@@ -2,89 +2,65 @@ package com.example.flipside.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.view.View;
-import android.widget.Button;
-import android.widget.TextView;
 import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 
-// Firebase Imports
-import com.example.flipside.R;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.firestore.FirebaseFirestore;
 
 public class MainActivity extends AppCompatActivity {
 
     private FirebaseAuth mAuth;
-    private TextView tvWelcome;
-    private Button btnLogout, btnSellerDashboard;
+    private FirebaseFirestore db;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
         mAuth = FirebaseAuth.getInstance();
+        db = FirebaseFirestore.getInstance();
+
         FirebaseUser currentUser = mAuth.getCurrentUser();
 
         if (currentUser == null) {
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-            return;
+            // User is NOT logged in -> Send to Login
+            sendToLogin();
+        } else {
+            // User IS logged in -> Check if Buyer or Seller -> Send to Dashboard
+            checkUserTypeAndRedirect(currentUser.getUid());
         }
+    }
 
-        tvWelcome = findViewById(R.id.tvWelcome);
-        btnLogout = findViewById(R.id.btnLogout);
-        btnSellerDashboard = findViewById(R.id.btnSellerDashboard);
+    private void checkUserTypeAndRedirect(String uid) {
+        db.collection("users").document(uid).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    if (documentSnapshot.exists()) {
+                        String userType = documentSnapshot.getString("userType");
 
-        tvWelcome.setText("Welcome, " + currentUser.getEmail());
-
-        btnLogout.setOnClickListener(v -> {
-            mAuth.signOut();
-            Toast.makeText(MainActivity.this, "Logged Out", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(MainActivity.this, LoginActivity.class);
-            startActivity(intent);
-            finish();
-        });
-
-
-        btnSellerDashboard.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SellerDashboardActivity.class);
-            startActivity(intent);
-        });
-
-        Button btnMarketplace = findViewById(R.id.btnMarketplace);
-
-        btnMarketplace.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, BuyerDashboardActivity.class);
-            startActivity(intent);
-        });
-
-        Button btnSupport = findViewById(R.id.btnSupport);
-
-        btnSupport.setOnClickListener(v -> {
-            Intent intent = new Intent(MainActivity.this, SupportActivity.class);
-            startActivity(intent);
-        });
-
-        Button btnAdminPanel = findViewById(R.id.btnAdminPanel);
-
-        // check if user is admin
-        String uid = com.google.firebase.auth.FirebaseAuth.getInstance().getCurrentUser().getUid();
-        com.google.firebase.firestore.FirebaseFirestore.getInstance()
-                .collection("users").document(uid).get()
-                .addOnSuccessListener(doc -> {
-                    if (doc.exists()) {
-                        com.example.flipside.models.User user = doc.toObject(com.example.flipside.models.User.class);
-                        if (user != null && user.isAdmin()) {
-                            btnAdminPanel.setVisibility(View.VISIBLE);
+                        if ("Seller".equalsIgnoreCase(userType)) {
+                            Intent intent = new Intent(MainActivity.this, SellerDashboardActivity.class);
+                            startActivity(intent);
+                        } else {
+                            // Default to Buyer Dashboard
+                            Intent intent = new Intent(MainActivity.this, BuyerDashboardActivity.class);
+                            startActivity(intent);
                         }
+                        finish(); // Close MainActivity so they can't go back
+                    } else {
+                        // Profile missing (rare error)
+                        sendToLogin();
                     }
+                })
+                .addOnFailureListener(e -> {
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    sendToLogin();
                 });
+    }
 
-        btnAdminPanel.setOnClickListener(v -> {
-            startActivity(new Intent(MainActivity.this, AdminDashboardActivity.class));
-        });
+    private void sendToLogin() {
+        Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+        startActivity(intent);
+        finish();
     }
 }
