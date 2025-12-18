@@ -2,6 +2,7 @@ package com.example.flipside.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
@@ -37,6 +38,13 @@ public class BuyerDashboardActivity extends AppCompatActivity {
 
         setupBottomNav();
         setupDrawer();
+
+        ImageView ivMenu = findViewById(R.id.ivMenu);
+        ivMenu.setOnClickListener(v -> {
+            if (drawerLayout != null) {
+                drawerLayout.openDrawer(GravityCompat.START);
+            }
+        });
 
         // Load Home Fragment by default
         getSupportFragmentManager().beginTransaction()

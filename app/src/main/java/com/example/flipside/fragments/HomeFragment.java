@@ -60,7 +60,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void initViews(View view) {
-        ivMenu = view.findViewById(R.id.ivMenu);
         btnCart = view.findViewById(R.id.btnCart);
         searchView = view.findViewById(R.id.searchView);
         progressBar = view.findViewById(R.id.progressBar);
@@ -98,12 +97,6 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupListeners() {
-        // --- FIXED: Opens the Sidebar in the parent Activity ---
-        ivMenu.setOnClickListener(v -> {
-            if (getActivity() instanceof BuyerDashboardActivity) {
-                ((BuyerDashboardActivity) getActivity()).openDrawer();
-            }
-        });
 
         // Opens Cart Activity
         btnCart.setOnClickListener(v -> startActivity(new Intent(getContext(), CartActivity.class)));
