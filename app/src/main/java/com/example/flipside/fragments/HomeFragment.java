@@ -17,6 +17,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.flipside.R;
+import com.example.flipside.activities.BuyerDashboardActivity;
 import com.example.flipside.activities.CartActivity;
 import com.example.flipside.adapters.ProductAdapter;
 import com.example.flipside.models.Product;
@@ -45,6 +46,7 @@ public class HomeFragment extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        // Inflate the layout for this fragment
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         db = FirebaseFirestore.getInstance();
@@ -69,6 +71,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void setupRecyclerViews() {
+        // Initialize lists
         listClothing = new ArrayList<>();
         listShoes = new ArrayList<>();
         listElectronics = new ArrayList<>();
@@ -77,25 +80,35 @@ public class HomeFragment extends Fragment {
         masterShoes = new ArrayList<>();
         masterElectronics = new ArrayList<>();
 
-        // NOTE: 'false' here implies isSellerMode=false (Buyer View)
-        clothingAdapter = new ProductAdapter(getContext(), listClothing, false);
-        shoesAdapter = new ProductAdapter(getContext(), listShoes, false);
-        electronicsAdapter = new ProductAdapter(getContext(), listElectronics, false);
+        // Initialize Adapters
+        // Using getContext() because we are inside a Fragment
+        clothingAdapter = new ProductAdapter(getContext(), listClothing);
+        shoesAdapter = new ProductAdapter(getContext(), listShoes);
+        electronicsAdapter = new ProductAdapter(getContext(), listElectronics);
 
+        // Setup Layout Managers (Horizontal scrolling)
         rvClothing.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         rvShoes.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
         rvElectronics.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
 
+        // Attach Adapters
         rvClothing.setAdapter(clothingAdapter);
         rvShoes.setAdapter(shoesAdapter);
         rvElectronics.setAdapter(electronicsAdapter);
     }
 
     private void setupListeners() {
-        ivMenu.setOnClickListener(v -> Toast.makeText(getContext(), "Menu", Toast.LENGTH_SHORT).show());
+        // --- FIXED: Opens the Sidebar in the parent Activity ---
+        ivMenu.setOnClickListener(v -> {
+            if (getActivity() instanceof BuyerDashboardActivity) {
+                ((BuyerDashboardActivity) getActivity()).openDrawer();
+            }
+        });
 
+        // Opens Cart Activity
         btnCart.setOnClickListener(v -> startActivity(new Intent(getContext(), CartActivity.class)));
 
+        // Search Bar Logic
         searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
             @Override
             public boolean onQueryTextSubmit(String query) {
@@ -113,14 +126,17 @@ public class HomeFragment extends Fragment {
 
     private void loadAllProducts() {
         progressBar.setVisibility(View.VISIBLE);
+
         db.collection("products")
                 .whereEqualTo("available", true)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
+                    // Check if Fragment is still attached to avoid crashes
                     if (getContext() == null) return;
 
                     progressBar.setVisibility(View.GONE);
 
+                    // Clear existing data
                     listClothing.clear(); masterClothing.clear();
                     listShoes.clear(); masterShoes.clear();
                     listElectronics.clear(); masterElectronics.clear();
@@ -128,11 +144,15 @@ public class HomeFragment extends Fragment {
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         try {
                             Product product = doc.toObject(Product.class);
-                            // Ensure ID is set
-                            if (product.getProductId() == null) product.setProductId(doc.getId());
+
+                            // Ensure Product ID is set (useful for clicks)
+                            if (product.getProductId() == null) {
+                                product.setProductId(doc.getId());
+                            }
 
                             String cat = product.getCategory();
 
+                            // Sort into correct list based on Category
                             if (cat != null) {
                                 if (cat.equalsIgnoreCase("Clothing")) {
                                     listClothing.add(product);
@@ -150,6 +170,7 @@ public class HomeFragment extends Fragment {
                         }
                     }
 
+                    // Refresh Adapters
                     clothingAdapter.notifyDataSetChanged();
                     shoesAdapter.notifyDataSetChanged();
                     electronicsAdapter.notifyDataSetChanged();
@@ -157,7 +178,7 @@ public class HomeFragment extends Fragment {
                 .addOnFailureListener(e -> {
                     if (getContext() != null) {
                         progressBar.setVisibility(View.GONE);
-                        Toast.makeText(getContext(), "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getContext(), "Error loading products: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                     }
                 });
     }
@@ -165,14 +186,17 @@ public class HomeFragment extends Fragment {
     private void filterAllShelves(String query) {
         ProductFilter filter = new NameFilter(query);
 
+        // Filter Clothing
         listClothing.clear();
         listClothing.addAll(filter.meetCriteria(masterClothing));
         clothingAdapter.notifyDataSetChanged();
 
+        // Filter Shoes
         listShoes.clear();
         listShoes.addAll(filter.meetCriteria(masterShoes));
         shoesAdapter.notifyDataSetChanged();
 
+        // Filter Electronics
         listElectronics.clear();
         listElectronics.addAll(filter.meetCriteria(masterElectronics));
         electronicsAdapter.notifyDataSetChanged();

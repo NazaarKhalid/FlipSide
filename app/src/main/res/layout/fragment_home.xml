@@ -18,31 +18,39 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:gravity="center_vertical"
-            android:padding="16dp">
+            android:paddingHorizontal="16dp"
+            android:paddingTop="16dp"
+            android:paddingBottom="8dp">
 
             <ImageView
                 android:id="@+id/ivMenu"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_sort_by_size"
-                app:tint="#5D4037"/>
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_menu"
+                app:tint="#5D4037"
+                android:clickable="true"
+                android:focusable="true"/>
 
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="FlipSide"
-                android:textSize="20sp"
+                android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#5D4037"
                 android:gravity="center"/>
 
             <ImageView
                 android:id="@+id/btnCart"
-                android:layout_width="24dp"
-                android:layout_height="24dp"
-                android:src="@android:drawable/ic_menu_upload"
-                app:tint="#5D4037"/>
+                android:layout_width="32dp"
+                android:layout_height="32dp"
+                android:padding="4dp"
+                android:src="@drawable/ic_cart"
+                app:tint="#5D4037"
+                android:clickable="true"
+                android:focusable="true"/>
         </LinearLayout>
 
         <androidx.appcompat.widget.SearchView
@@ -51,10 +59,10 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             android:layout_marginBottom="16dp"
-            android:background="@android:color/white"
+            android:background="@drawable/bg_search_rounded"
             app:queryHint="Search products..."
-            app:iconifiedByDefault="false"/>
-
+            app:iconifiedByDefault="false"
+            app:searchIcon="@drawable/ic_search"/>
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
