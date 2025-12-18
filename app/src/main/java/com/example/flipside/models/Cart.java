@@ -4,40 +4,54 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class Cart {
-    private String cartId;
-    private List<CartItem> cartItems;
+    private List<CartItem> items;
+    private double totalPrice;
 
-    // default constructor
     public Cart() {
-        this.cartItems = new ArrayList<>();
+        this.items = new ArrayList<>();
+        this.totalPrice = 0.0;
     }
 
-    // parameterized constructor
-    public Cart(String cartId) {
-        this.cartId = cartId;
-        this.cartItems = new ArrayList<>();
+    public List<CartItem> getItems() {
+        return items;
     }
 
-    // getter setters
-    public String getCartId() { return cartId; }
-    public void setCartId(String cartId) { this.cartId = cartId; }
+    public void setItems(List<CartItem> items) {
+        this.items = items;
+        calculateTotal();
+    }
 
-    public List<CartItem> getCartItems() { return cartItems; }
-    public void setCartItems(List<CartItem> cartItems) { this.cartItems = cartItems; }
+    public double getTotalPrice() {
+        return totalPrice;
+    }
 
-    //helper methods
-    public void addItem(CartItem newItem) {
-        this.cartItems.add(newItem);
+    public void setTotalPrice(double totalPrice) {
+        this.totalPrice = totalPrice;
+    }
+
+    public void addItem(CartItem item) {
+        if (this.items == null) {
+            this.items = new ArrayList<>();
+        }
+        this.items.add(item);
+        calculateTotal();
     }
 
     public void removeItem(CartItem item) {
-        this.cartItems.remove(item);
-    }
-    public double getTotalAmount() {
-        double total = 0.0;
-        for (CartItem item : cartItems) {
-            total += item.getItemTotalPrice();
+        if (this.items != null) {
+            this.items.remove(item);
+            calculateTotal();
         }
-        return total;
+    }
+
+    public void calculateTotal() {
+        this.totalPrice = 0.0;
+        if (items != null) {
+            for (CartItem item : items) {
+                if (item.getProduct() != null) {
+                    this.totalPrice += item.getProduct().getPrice() * item.getQuantity();
+                }
+            }
+        }
     }
 }

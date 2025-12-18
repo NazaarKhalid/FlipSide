@@ -4,16 +4,15 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.flipside.R;
 import com.example.flipside.adapters.CartAdapter;
-import com.example.flipside.models.Cart;
 import com.example.flipside.models.CartItem;
 import com.example.flipside.models.User;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,18 +23,16 @@ import java.util.List;
 
 public class CartActivity extends AppCompatActivity {
 
-    private RecyclerView rvCart;
-    private TextView tvTotalAmount, tvEmptyCart;
-    private Button btnCheckout;
-    private ProgressBar progressBar;
-
-    private CartAdapter adapter;
+    private RecyclerView rvCartItems;
+    private CartAdapter cartAdapter;
     private List<CartItem> cartItemList;
+
+    private TextView tvTotalPrice, tvEmptyCart;
+    private Button btnCheckout;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
-    private String currentUserId;
-    private User currentUserObj;
+    private String userId;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -44,100 +41,97 @@ public class CartActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-        currentUserId = mAuth.getCurrentUser().getUid();
 
-        rvCart = findViewById(R.id.rvCart);
-        tvTotalAmount = findViewById(R.id.tvTotalAmount);
+        if (mAuth.getCurrentUser() != null) {
+            userId = mAuth.getCurrentUser().getUid();
+        } else {
+            finish();
+        }
+
+        rvCartItems = findViewById(R.id.rvCartItems);
+        tvTotalPrice = findViewById(R.id.tvTotalPrice);
         tvEmptyCart = findViewById(R.id.tvEmptyCart);
         btnCheckout = findViewById(R.id.btnCheckout);
-        progressBar = findViewById(R.id.progressBar);
 
-        rvCart.setLayoutManager(new LinearLayoutManager(this));
+        rvCartItems.setLayoutManager(new LinearLayoutManager(this));
         cartItemList = new ArrayList<>();
 
-
-        adapter = new CartAdapter(this, cartItemList, position -> removeItem(position));
-        rvCart.setAdapter(adapter);
+        cartAdapter = new CartAdapter(this, cartItemList, position -> removeItem(position));
+        rvCartItems.setAdapter(cartAdapter);
 
         loadCart();
 
         btnCheckout.setOnClickListener(v -> {
-            Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
-            startActivity(intent);
-
+            if (!cartItemList.isEmpty()) {
+                Intent intent = new Intent(CartActivity.this, CheckoutActivity.class);
+                intent.putExtra("totalPrice", calculateTotal());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Your cart is empty!", Toast.LENGTH_SHORT).show();
+            }
         });
     }
 
     private void loadCart() {
-        progressBar.setVisibility(View.VISIBLE);
-
-        db.collection("users").document(currentUserId).get()
+        db.collection("users").document(userId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    progressBar.setVisibility(View.GONE);
                     if (documentSnapshot.exists()) {
-                        currentUserObj = documentSnapshot.toObject(User.class);
+                        User user = documentSnapshot.toObject(User.class);
+                        if (user != null && user.getBuyerProfile() != null && user.getBuyerProfile().getCart() != null) {
 
-                        if (currentUserObj != null &&
-                                currentUserObj.getBuyerProfile() != null &&
-                                currentUserObj.getBuyerProfile().getCart() != null) {
+                            List<CartItem> items = user.getBuyerProfile().getCart().getItems();
 
-                            Cart cart = currentUserObj.getBuyerProfile().getCart();
                             cartItemList.clear();
-
-                            if (cart.getCartItems() != null) {
-                                cartItemList.addAll(cart.getCartItems());
+                            if (items != null) {
+                                cartItemList.addAll(items);
                             }
 
-                            updateUI();
+                            if (cartItemList.isEmpty()) {
+                                tvEmptyCart.setVisibility(View.VISIBLE);
+                                rvCartItems.setVisibility(View.GONE);
+                            } else {
+                                tvEmptyCart.setVisibility(View.GONE);
+                                rvCartItems.setVisibility(View.VISIBLE);
+                            }
+
+                            cartAdapter.notifyDataSetChanged();
+                            updateTotalPrice();
                         }
                     }
                 })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Error loading cart", Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void updateUI() {
-        adapter.notifyDataSetChanged();
-
-
-        double total = 0;
-        for (CartItem item : cartItemList) {
-            total += item.getItemTotalPrice();
-        }
-        tvTotalAmount.setText("PKR " + total);
-
-
-        if (cartItemList.isEmpty()) {
-            tvEmptyCart.setVisibility(View.VISIBLE);
-            rvCart.setVisibility(View.GONE);
-            btnCheckout.setEnabled(false);
-        } else {
-            tvEmptyCart.setVisibility(View.GONE);
-            rvCart.setVisibility(View.VISIBLE);
-            btnCheckout.setEnabled(true);
-        }
+                .addOnFailureListener(e -> Toast.makeText(this, "Error loading cart", Toast.LENGTH_SHORT).show());
     }
 
     private void removeItem(int position) {
-
         cartItemList.remove(position);
+        cartAdapter.notifyItemRemoved(position);
+        updateTotalPrice();
+        updateCartInFirebase();
+    }
 
-
-        currentUserObj.getBuyerProfile().getCart().setCartItems(cartItemList);
-
-        progressBar.setVisibility(View.VISIBLE);
-        db.collection("users").document(currentUserId)
-                .set(currentUserObj)
-                .addOnSuccessListener(aVoid -> {
-                    progressBar.setVisibility(View.GONE);
-                    updateUI();
-                    Toast.makeText(this, "Item removed", Toast.LENGTH_SHORT).show();
-                })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    Toast.makeText(this, "Failed to update cart", Toast.LENGTH_SHORT).show();
+    private void updateCartInFirebase() {
+        db.collection("users").document(userId).get()
+                .addOnSuccessListener(doc -> {
+                    User user = doc.toObject(User.class);
+                    if (user != null) {
+                        user.getBuyerProfile().getCart().setItems(cartItemList);
+                        db.collection("users").document(userId).set(user);
+                    }
                 });
+    }
+
+    private void updateTotalPrice() {
+        double total = calculateTotal();
+        tvTotalPrice.setText("PKR " + total);
+    }
+
+    private double calculateTotal() {
+        double total = 0;
+        for (CartItem item : cartItemList) {
+            if (item.getProduct() != null) {
+                total += item.getProduct().getPrice() * item.getQuantity();
+            }
+        }
+        return total;
     }
 }
