@@ -27,28 +27,23 @@ public class MainActivity extends AppCompatActivity {
             // User is NOT logged in -> Send to Login
             sendToLogin();
         } else {
-            // User IS logged in -> Check if Buyer or Seller -> Send to Dashboard
-            checkUserTypeAndRedirect(currentUser.getUid());
+            // User IS logged in -> Check existence -> Send to Unified Dashboard
+            checkUserAndRedirect(currentUser.getUid());
         }
     }
 
-    private void checkUserTypeAndRedirect(String uid) {
+    private void checkUserAndRedirect(String uid) {
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        String userType = documentSnapshot.getString("userType");
 
-                        if ("Seller".equalsIgnoreCase(userType)) {
-                            Intent intent = new Intent(MainActivity.this, SellerDashboardActivity.class);
-                            startActivity(intent);
-                        } else {
-                            // Default to Buyer Dashboard
-                            Intent intent = new Intent(MainActivity.this, BuyerDashboardActivity.class);
-                            startActivity(intent);
-                        }
-                        finish(); // Close MainActivity so they can't go back
+                        Intent intent = new Intent(MainActivity.this, BuyerDashboardActivity.class);
+                        startActivity(intent);
+                        finish();
+
                     } else {
-                        // Profile missing (rare error)
+                        // User exists in Auth but not in Firestore
+                        Toast.makeText(this, "User profile not found.", Toast.LENGTH_SHORT).show();
                         sendToLogin();
                     }
                 })

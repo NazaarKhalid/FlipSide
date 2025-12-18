@@ -85,7 +85,6 @@ public class SignUpActivity extends AppCompatActivity {
     private void saveUserToFirestore(String uid, String name, String email, String phone) {
         User newUser = new User(uid, name, email, phone);
 
-        // IMPORTANT: Set User Type to "Buyer" so LoginActivity knows where to route later
         newUser.setUserType("Buyer");
 
         BuyerProfile defaultBuyerProfile = new BuyerProfile(uid, uid);

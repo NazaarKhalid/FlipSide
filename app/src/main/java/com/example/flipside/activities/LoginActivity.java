@@ -3,7 +3,6 @@ package com.example.flipside.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -12,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.flipside.R;
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class LoginActivity extends AppCompatActivity {
@@ -62,7 +60,7 @@ public class LoginActivity extends AppCompatActivity {
         mAuth.signInWithEmailAndPassword(email, password)
                 .addOnCompleteListener(this, task -> {
                     if (task.isSuccessful()) {
-                        checkUserRoleAndRedirect();
+                        checkUserAndRedirect();
                     } else {
                         btnLogin.setEnabled(true);
                         btnLogin.setText("Login");
@@ -71,33 +69,27 @@ public class LoginActivity extends AppCompatActivity {
                 });
     }
 
-    private void checkUserRoleAndRedirect() {
+    private void checkUserAndRedirect() {
         String uid = mAuth.getCurrentUser().getUid();
 
         db.collection("users").document(uid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        // Check the "userType" field to decide where to go
-                        String userType = documentSnapshot.getString("userType");
 
-                        Intent intent;
-                        if ("Seller".equalsIgnoreCase(userType)) {
-                            intent = new Intent(LoginActivity.this, SellerDashboardActivity.class);
-                        } else {
-                            intent = new Intent(LoginActivity.this, BuyerDashboardActivity.class);
-                        }
+                        Intent intent = new Intent(LoginActivity.this, BuyerDashboardActivity.class);
 
-                        // Clear the back stack so they can't go back to Login
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
                         startActivity(intent);
                         finish();
                     } else {
                         btnLogin.setEnabled(true);
-                        Toast.makeText(LoginActivity.this, "User profile not found!", Toast.LENGTH_SHORT).show();
+                        btnLogin.setText("Login");
+                        Toast.makeText(LoginActivity.this, "User profile not found in database!", Toast.LENGTH_SHORT).show();
                     }
                 })
                 .addOnFailureListener(e -> {
                     btnLogin.setEnabled(true);
+                    btnLogin.setText("Login");
                     Toast.makeText(LoginActivity.this, "Error fetching profile: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }

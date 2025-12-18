@@ -15,14 +15,16 @@ import androidx.cardview.widget.CardView;
 import androidx.fragment.app.Fragment;
 
 import com.example.flipside.R;
+import com.example.flipside.services.StoreAnalyticsFacade; // Importing your Facade
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.DocumentSnapshot;
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProfileFragment extends Fragment {
 
     private TextView tvUserName, tvUserEmail;
     private TextView tvFollowersCount, tvFollowingCount;
+
+    // Seller Dashboard Views
     private TextView tvRevenue, tvActiveProducts;
 
     private CardView cardBecomeSeller;
@@ -33,6 +35,9 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth mAuth;
     private String currentUserId;
 
+    // Add Facade
+    private StoreAnalyticsFacade analyticsFacade;
+
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
@@ -40,6 +45,7 @@ public class ProfileFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
+        analyticsFacade = new StoreAnalyticsFacade();
 
         if (mAuth.getCurrentUser() != null) {
             currentUserId = mAuth.getCurrentUser().getUid();
@@ -48,7 +54,6 @@ public class ProfileFragment extends Fragment {
         initViews(view);
         loadUserProfile();
 
-        // Listeners
         btnBecomeSeller.setOnClickListener(v -> handleBecomeSeller());
         btnEditProfile.setOnClickListener(v -> Toast.makeText(getContext(), "Edit Profile coming soon", Toast.LENGTH_SHORT).show());
 
@@ -61,9 +66,9 @@ public class ProfileFragment extends Fragment {
         tvFollowersCount = view.findViewById(R.id.tvFollowersCount);
         tvFollowingCount = view.findViewById(R.id.tvFollowingCount);
 
-        // Seller Dashboard Views
         tvRevenue = view.findViewById(R.id.tvRevenue);
         tvActiveProducts = view.findViewById(R.id.tvActiveProducts);
+
         cardBecomeSeller = view.findViewById(R.id.cardBecomeSeller);
         gridSellerAnalytics = view.findViewById(R.id.gridSellerAnalytics);
         btnBecomeSeller = view.findViewById(R.id.btnBecomeSeller);
@@ -73,31 +78,28 @@ public class ProfileFragment extends Fragment {
     private void loadUserProfile() {
         if (currentUserId == null) return;
 
-        // 1. Get Basic User Details (Name, Role, etc.)
         db.collection("users").document(currentUserId)
                 .get()
                 .addOnSuccessListener(document -> {
                     if (document.exists()) {
                         String name = document.getString("name");
                         String email = document.getString("email");
-                        String role = document.getString("role"); // Assuming "Buyer" or "Seller"
+                        String role = document.getString("role");
 
                         tvUserName.setText(name != null ? name : "FlipSide User");
                         tvUserEmail.setText(email != null ? email : mAuth.getCurrentUser().getEmail());
 
-                        // Check Role to Toggle UI
-                        if ("Seller".equalsIgnoreCase(role)) {
-                            showSellerDashboard();
-                        } else {
-                            showBuyerDashboard();
-                        }
-
-                        // If you have specific fields for counts in the user document:
                         Long followers = document.getLong("followersCount");
                         Long following = document.getLong("followingCount");
 
                         if (followers != null) tvFollowersCount.setText(String.valueOf(followers));
                         if (following != null) tvFollowingCount.setText(String.valueOf(following));
+
+                        if ("Seller".equalsIgnoreCase(role)) {
+                            showSellerDashboard();
+                        } else {
+                            showBuyerDashboard();
+                        }
                     }
                 })
                 .addOnFailureListener(e -> {
@@ -115,20 +117,24 @@ public class ProfileFragment extends Fragment {
         cardBecomeSeller.setVisibility(View.GONE);
         gridSellerAnalytics.setVisibility(View.VISIBLE);
 
-        // Fetch fake analytics for now (You can replace this with real query later)
-        tvRevenue.setText("PKR 0.00");
+        analyticsFacade.fetchStoreStats(currentUserId, new StoreAnalyticsFacade.AnalyticsCallback() {
+            @Override
+            public void onDataCalculated(double totalRevenue, int totalOrders, int totalItemsSold) {
+                if (getContext() == null) return;
 
-        // Count products for this seller
-        db.collection("products")
-                .whereEqualTo("sellerId", currentUserId)
-                .get()
-                .addOnSuccessListener(snapshots -> {
-                    tvActiveProducts.setText(String.valueOf(snapshots.size()));
-                });
+                tvRevenue.setText("PKR " + totalRevenue);
+                tvActiveProducts.setText(String.valueOf(totalItemsSold));
+            }
+
+            @Override
+            public void onError(String error) {
+                if (getContext() != null)
+                    Toast.makeText(getContext(), "Analytics Error: " + error, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void handleBecomeSeller() {
-        // For now, simple toggle to Seller role in Firestore
         if (currentUserId == null) return;
 
         db.collection("users").document(currentUserId)
