@@ -11,7 +11,7 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.flipside.R;
-import com.example.flipside.fragments.ChatListFragment; // Import this
+import com.example.flipside.fragments.ChatListFragment;
 import com.example.flipside.fragments.HomeFragment;
 import com.example.flipside.fragments.OrderHistoryFragment;
 import com.example.flipside.fragments.ProfileFragment;
@@ -29,7 +29,7 @@ public class BuyerDashboardActivity extends AppCompatActivity {
     private final Fragment homeFragment = new HomeFragment();
     private final Fragment orderHistoryFragment = new OrderHistoryFragment();
     private final Fragment profileFragment = new ProfileFragment();
-    private final Fragment chatListFragment = new ChatListFragment(); // 1. Add Chat Fragment
+    private final Fragment chatListFragment = new ChatListFragment();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,7 +38,7 @@ public class BuyerDashboardActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view_drawer);
-        bottomNav = findViewById(R.id.bottom_navigation); // Ensure this ID matches XML
+        bottomNav = findViewById(R.id.bottom_navigation);
 
         // Header Hamburger Logic
         ImageView ivMenu = findViewById(R.id.ivMenu);
@@ -70,14 +70,13 @@ public class BuyerDashboardActivity extends AppCompatActivity {
                 selectedFragment = homeFragment;
             }
             else if (id == R.id.nav_messages) {
-                // 2. CHANGED: Load the Chat Fragment instead of Toast
                 selectedFragment = chatListFragment;
             }
             else if (id == R.id.nav_sell) {
                 // DIRECT ACTION: Open AddProductActivity
                 Intent intent = new Intent(BuyerDashboardActivity.this, AddProductActivity.class);
                 startActivity(intent);
-                return false; // Don't highlight the tab
+                return false;
             }
             else if (id == R.id.nav_orders) {
                 selectedFragment = orderHistoryFragment;
@@ -100,11 +99,26 @@ public class BuyerDashboardActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            // Logout logic is here (Side Drawer)
             if (id == R.id.menu_logout) {
                 logout();
-            } else if (id == R.id.menu_settings) {
+            }
+            else if (id == R.id.menu_settings) {
                 Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
+            }
+            // --- NEW: COMPLAINT MODULE HANDLER ---
+            else if (id == R.id.nav_complaint) {
+                Intent intent = new Intent(BuyerDashboardActivity.this, ComplaintActivity.class);
+                startActivity(intent);
+            }
+            // --- OPTIONAL: Handle Categories if needed ---
+            else if (id == R.id.cat_clothing) {
+                Toast.makeText(this, "Clothing Category", Toast.LENGTH_SHORT).show();
+            }
+            else if (id == R.id.cat_shoes) {
+                Toast.makeText(this, "Shoes Category", Toast.LENGTH_SHORT).show();
+            }
+            else if (id == R.id.cat_electronics) {
+                Toast.makeText(this, "Electronics Category", Toast.LENGTH_SHORT).show();
             }
 
             drawerLayout.closeDrawer(GravityCompat.START);
