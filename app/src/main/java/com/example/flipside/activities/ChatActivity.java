@@ -2,37 +2,37 @@ package com.example.flipside.activities;
 
 import android.os.Bundle;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.Toast;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.flipside.R;
-import com.example.flipside.adapters.MessageAdapter;
+import com.example.flipside.adapters.ChatAdapter;
 import com.example.flipside.models.Chat;
 import com.example.flipside.models.Message;
 import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
+import com.google.firebase.firestore.Query;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.UUID;
 
 public class ChatActivity extends AppCompatActivity {
 
-    private RecyclerView rvChatMessages;
-    private EditText etMessageInput;
-    private Button btnSend;
-    private MessageAdapter adapter;
-    private List<Message> messageList;
+    private RecyclerView rvChat;
+    private EditText etMessage;
+    private ImageButton btnSend;
 
+    private ChatAdapter chatAdapter;
+    private ArrayList<Message> messageList;
     private FirebaseFirestore db;
     private String currentUserId;
-    private String receiverId;
+    private String receiverId; // The person we are talking to
     private String chatId;
 
     @Override
@@ -42,65 +42,86 @@ public class ChatActivity extends AppCompatActivity {
 
         db = FirebaseFirestore.getInstance();
         currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
-        receiverId = getIntent().getStringExtra("sellerId");
 
-        rvChatMessages = findViewById(R.id.rvChatMessages);
-        etMessageInput = findViewById(R.id.etMessageInput);
-        btnSend = findViewById(R.id.btnSend);
+        // Passed from the previous screen (e.g., Product Details or Chat List)
+        receiverId = getIntent().getStringExtra("receiverId");
 
-        messageList = new ArrayList<>();
-        adapter = new MessageAdapter(this, messageList);
-        rvChatMessages.setLayoutManager(new LinearLayoutManager(this));
-        rvChatMessages.setAdapter(adapter);
+        initViews();
+        setupRecyclerView();
 
-        setupChat();
+        // Find or Create the Chat ID based on participants
+        generateChatId();
+
+        // Listen for live messages
+        listenForMessages();
 
         btnSend.setOnClickListener(v -> sendMessage());
     }
 
-    private void setupChat() {
+    private void initViews() {
+        rvChat = findViewById(R.id.rvChat);
+        etMessage = findViewById(R.id.etMessage);
+        btnSend = findViewById(R.id.btnSend);
+    }
+
+    private void setupRecyclerView() {
+        messageList = new ArrayList<>();
+        chatAdapter = new ChatAdapter(this, messageList);
+        rvChat.setLayoutManager(new LinearLayoutManager(this));
+        rvChat.setAdapter(chatAdapter);
+    }
+
+    private void generateChatId() {
+        // Unique ID combination: SmallerID_LargerID (so it's always the same for two people)
         if (currentUserId.compareTo(receiverId) < 0) {
             chatId = currentUserId + "_" + receiverId;
         } else {
             chatId = receiverId + "_" + currentUserId;
         }
+    }
 
+    private void listenForMessages() {
+        // Listen to the specific Chat Document
         db.collection("chats").document(chatId)
-                .addSnapshotListener((documentSnapshot, e) -> {
+                .addSnapshotListener((snapshot, e) -> {
                     if (e != null) return;
 
-                    if (documentSnapshot != null && documentSnapshot.exists()) {
-                        Chat chat = documentSnapshot.toObject(Chat.class);
+                    if (snapshot != null && snapshot.exists()) {
+                        Chat chat = snapshot.toObject(Chat.class);
                         if (chat != null && chat.getMessages() != null) {
                             messageList.clear();
                             messageList.addAll(chat.getMessages());
-                            adapter.notifyDataSetChanged();
-                            rvChatMessages.scrollToPosition(messageList.size() - 1);
+                            chatAdapter.notifyDataSetChanged();
+                            rvChat.scrollToPosition(messageList.size() - 1);
                         }
                     }
                 });
     }
 
     private void sendMessage() {
-        String content = etMessageInput.getText().toString().trim();
+        String content = etMessage.getText().toString().trim();
         if (TextUtils.isEmpty(content)) return;
 
-        etMessageInput.setText("");
+        etMessage.setText(""); // Clear input
 
-        String messageId = String.valueOf(System.currentTimeMillis());
-        Message message = new Message(messageId, currentUserId, content);
+        String messageId = UUID.randomUUID().toString();
+        Message newMessage = new Message(messageId, currentUserId, content);
 
         db.collection("chats").document(chatId).get()
                 .addOnSuccessListener(documentSnapshot -> {
-                    if (!documentSnapshot.exists()) {
-                        List<String> participants = Arrays.asList(currentUserId, receiverId);
-                        Chat newChat = new Chat(chatId, participants);
-                        newChat.addMessage(message);
-                        db.collection("chats").document(chatId).set(newChat);
+                    Chat chat;
+                    if (documentSnapshot.exists()) {
+                        // Chat exists, add message
+                        chat = documentSnapshot.toObject(Chat.class);
+                        chat.addMessage(newMessage);
                     } else {
-                        db.collection("chats").document(chatId)
-                                .update("messages", FieldValue.arrayUnion(message));
+                        // Create new chat
+                        chat = new Chat(chatId, Arrays.asList(currentUserId, receiverId));
+                        chat.addMessage(newMessage);
                     }
+
+                    // Save back to Firestore
+                    db.collection("chats").document(chatId).set(chat);
                 });
     }
 }

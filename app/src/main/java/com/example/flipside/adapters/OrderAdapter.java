@@ -1,12 +1,17 @@
 package com.example.flipside.adapters;
 
+import android.app.Dialog;
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.EditText;
+import android.widget.RatingBar;
 import android.widget.TextView;
 import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -24,6 +29,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
     private Context context;
     private List<Order> orderList;
+    private SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
 
     public OrderAdapter(Context context, List<Order> orderList) {
         this.context = context;
@@ -41,25 +47,39 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         Order order = orderList.get(position);
 
+        // 1. Order ID
         String orderIdDisplay = (order.getOrderId() != null && order.getOrderId().length() > 8)
-                ? order.getOrderId().substring(0, 8)
+                ? order.getOrderId().substring(0, 8).toUpperCase()
                 : order.getOrderId();
-
         holder.tvOrderId.setText("Order #" + orderIdDisplay);
 
-        if (order.getStatus() != null) {
-            holder.tvStatus.setText(order.getStatus().toString());
+        // 2. Date
+        if (order.getOrderDate() != null) {
+            holder.tvDate.setText(dateFormat.format(order.getOrderDate()));
         }
 
+        // 3. Price
         holder.tvTotal.setText("PKR " + order.getTotalAmount());
 
-        if (order.getOrderDate() != null) {
-            SimpleDateFormat sdf = new SimpleDateFormat("MMM dd, yyyy", Locale.getDefault());
-            holder.tvDate.setText(sdf.format(order.getOrderDate()));
+        // 4. Status Styling
+        String status = (order.getStatus() != null) ? order.getStatus().toString() : "PLACED";
+        holder.tvStatus.setText(status);
+
+        if ("DELIVERED".equalsIgnoreCase(status)) {
+            holder.tvStatus.setTextColor(Color.parseColor("#388E3C")); // Green
+            holder.btnRate.setVisibility(View.VISIBLE);
+        } else if ("CANCELLED".equalsIgnoreCase(status)) {
+            holder.tvStatus.setTextColor(Color.parseColor("#D32F2F")); // Red
+            holder.btnRate.setVisibility(View.GONE);
+        } else {
+            holder.tvStatus.setTextColor(Color.parseColor("#F57C00")); // Orange
+            holder.btnRate.setVisibility(View.GONE);
         }
 
+        // 5. Rate Logic
         holder.btnRate.setOnClickListener(v -> {
             if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
+                // Get store ID from the first item
                 String storeId = order.getOrderItems().get(0).getProduct().getStoreId();
                 if (storeId != null) {
                     showRatingDialog(context, storeId);
@@ -76,31 +96,39 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     }
 
     private void showRatingDialog(Context context, String storeId) {
-        android.app.Dialog dialog = new android.app.Dialog(context);
+        Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_rate_store);
-
         dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 
-        android.widget.RatingBar ratingBar = dialog.findViewById(R.id.ratingBar);
-        android.widget.EditText etComment = dialog.findViewById(R.id.etComment);
-        android.widget.Button btnSubmit = dialog.findViewById(R.id.btnSubmitReview);
+        RatingBar ratingBar = dialog.findViewById(R.id.ratingBar);
+        EditText etComment = dialog.findViewById(R.id.etComment);
+        Button btnSubmit = dialog.findViewById(R.id.btnSubmitReview);
 
         btnSubmit.setOnClickListener(v -> {
-            float rating = ratingBar.getRating();
+            float ratingFloat = ratingBar.getRating();
             String comment = etComment.getText().toString();
 
             if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
             String reviewerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
             String reviewId = "rev_" + System.currentTimeMillis();
-            Review review = new Review(reviewId, reviewerId, storeId, rating, comment);
+
+            // FIXED: Casting float to double to match your Model
+            Review review = new Review(
+                    reviewId,
+                    reviewerId,
+                    storeId,        // This maps to 'targetStoreId' in your constructor
+                    (double) ratingFloat,
+                    comment
+            );
 
             FirebaseFirestore.getInstance()
                     .collection("reviews").document(reviewId).set(review)
                     .addOnSuccessListener(aVoid -> {
                         Toast.makeText(context, "Review Submitted!", Toast.LENGTH_SHORT).show();
                         dialog.dismiss();
-                    });
+                    })
+                    .addOnFailureListener(e -> Toast.makeText(context, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
         });
 
         dialog.show();
@@ -112,6 +140,7 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
+            // Ensure these IDs match your item_order.xml
             tvOrderId = itemView.findViewById(R.id.tvOrderId);
             tvStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvDate = itemView.findViewById(R.id.tvOrderDate);

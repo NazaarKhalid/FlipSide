@@ -2,29 +2,14 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/beige_background">
+    android:background="#F5F5DC">
 
-    <ImageView
-        android:id="@+id/btnBack"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:src="@drawable/ic_menu"
-        android:rotation="180"
-        app:tint="@color/purple_700"
-        android:padding="8dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        android:contentDescription="Back" />
-
-    <androidx.core.widget.NestedScrollView
+    <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        app:layout_constraintTop_toBottomOf="@id/btnBack"
+        app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintBottom_toTopOf="@id/bottomBar">
 
         <LinearLayout
@@ -32,78 +17,101 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <androidx.cardview.widget.CardView
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="300dp"
-                android:layout_margin="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                app:cardBackgroundColor="@color/white">
+                android:layout_height="300dp">
 
                 <ImageView
                     android:id="@+id/ivProductImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/ic_box"
-                    app:tint="@color/surface_tan"/>
-            </androidx.cardview.widget.CardView>
+                    android:src="@android:drawable/ic_menu_gallery"
+                    android:scaleType="centerCrop"/>
 
-            <TextView
-                android:id="@+id/tvProductName"
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
+                    android:layout_margin="16dp"
+                    android:src="@android:drawable/ic_menu_revert"
+                    android:elevation="4dp"
+                    android:padding="8dp"/>
+            </FrameLayout>
+
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Vintage Nike Windbreaker"
-                android:textSize="26sp"
-                android:textStyle="bold"
-                android:textColor="@color/purple_700"
-                android:paddingHorizontal="20dp"
-                android:layout_marginTop="8dp"/>
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:layout_marginTop="-24dp"
+                android:elevation="8dp">
 
-            <TextView
-                android:id="@+id/tvProductPrice"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="PKR 4,500"
-                android:textSize="22sp"
-                android:textStyle="bold"
-                android:textColor="@color/teal_700"
-                android:paddingHorizontal="20dp"
-                android:layout_marginTop="4dp"/>
+                <TextView
+                    android:id="@+id/tvProductName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Product Name"
+                    android:textSize="26sp"
+                    android:textStyle="bold"
+                    android:textColor="#5D4037"/>
 
-            <com.google.android.material.chip.Chip
-                android:id="@+id/chipSeller"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sold by: CoolKicks"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="12dp"
-                app:chipBackgroundColor="@color/beige_card"/>
+                <TextView
+                    android:id="@+id/tvProductPrice"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="PKR 0.0"
+                    android:textSize="22sp"
+                    android:textColor="#388E3C"
+                    android:textStyle="bold"
+                    android:layout_marginTop="8dp"/>
 
-            <TextView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Description"
-                android:textSize="18sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:paddingHorizontal="20dp"
-                android:layout_marginTop="24dp"/>
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginTop="12dp">
 
-            <TextView
-                android:id="@+id/tvProductDesc"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="This is a rare 90s vintage piece. Excellent condition with no tears. Size Large but fits like a Medium."
-                android:textSize="16sp"
-                android:textColor="@color/text_secondary"
-                android:lineSpacingExtra="4dp"
-                android:paddingHorizontal="20dp"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="40dp"/>
+                    <com.google.android.material.chip.Chip
+                        android:id="@+id/chipSeller"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Seller ID: ..."
+                        android:textColor="#5D4037"
+                        app:chipBackgroundColor="#EFEBE9"/>
 
+                    <Button
+                        android:id="@+id/btnFollow"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_marginStart="12dp"
+                        android:text="Follow"
+                        android:textSize="12sp"
+                        android:backgroundTint="#FFB74D"
+                        android:textColor="#FFFFFF"/>
+                </LinearLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Description"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="#5D4037"
+                    android:layout_marginTop="24dp"/>
+
+                <TextView
+                    android:id="@+id/tvProductDesc"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Product details go here..."
+                    android:textSize="16sp"
+                    android:textColor="#757575"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="4dp"/>
+            </LinearLayout>
         </LinearLayout>
-    </androidx.core.widget.NestedScrollView>
+    </ScrollView>
 
     <LinearLayout
         android:id="@+id/bottomBar"
@@ -111,20 +119,30 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/white"
+        android:background="#FFFFFF"
         android:elevation="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
         <Button
-            android:id="@+id/btnAddToCart"
-            android:layout_width="match_parent"
+            android:id="@+id/btnContactSeller"
+            android:layout_width="0dp"
             android:layout_height="55dp"
+            android:layout_weight="1"
+            android:text="Message"
+            android:backgroundTint="#FFFFFF"
+            android:textColor="#5D4037"
+            android:layout_marginEnd="8dp"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+        <Button
+            android:id="@+id/btnAddToCart"
+            android:layout_width="0dp"
+            android:layout_height="55dp"
+            android:layout_weight="1.5"
             android:text="Add to Cart"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:backgroundTint="@color/purple_700"
-            android:textColor="@color/white"
-            app:cornerRadius="12dp"/>
+            android:backgroundTint="#5D4037"
+            android:textColor="#FFFFFF"
+            android:layout_marginStart="8dp"/>
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp"
-    android:background="#FFFFFF">
+    android:background="#F5F5DC"
+    android:padding="16dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:gravity="center_horizontal">
+        android:orientation="vertical">
 
         <TextView
             android:layout_width="wrap_content"
@@ -17,13 +17,14 @@
             android:text="New Product"
             android:textSize="24sp"
             android:textStyle="bold"
-            android:layout_marginBottom="20dp"/>
+            android:textColor="#5D4037"
+            android:layout_marginBottom="16dp"/>
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="250dp"
-            android:layout_marginBottom="24dp"
-            android:background="#F0F0F0">
+            android:layout_height="200dp"
+            android:layout_marginBottom="16dp"
+            android:background="#EFEFEF">
 
             <ImageView
                 android:id="@+id/ivProductImage"
@@ -31,75 +32,118 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_camera"
-                android:padding="80dp"
-                android:alpha="0.5"/>
+                app:tint="#BDBDBD"/>
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tap to select image"
-                android:layout_gravity="bottom|center"
-                android:layout_marginBottom="16dp"
-                android:textColor="#666666"/>
+                android:text="Tap to add image"
+                android:layout_gravity="center|bottom"
+                android:layout_marginBottom="8dp"
+                android:textColor="#757575"/>
         </FrameLayout>
 
-        <EditText
-            android:id="@+id/etProdName"
+        <com.google.android.material.textfield.TextInputLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
+            android:layout_height="wrap_content"
             android:hint="Product Name"
-            android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="12dp"/>
+            android:layout_marginBottom="8dp">
 
-        <EditText
-            android:id="@+id/etProdPrice"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textCapWords"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Price (PKR)"
-            android:inputType="numberDecimal"
-            android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="12dp"/>
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:baselineAligned="false">
 
-        <EditText
-            android:id="@+id/etProdStock"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:hint="Stock Quantity"
-            android:inputType="number"
-            android:background="@android:drawable/edit_text"
-            android:layout_marginBottom="12dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Price (PKR)"
+                android:layout_marginEnd="8dp">
 
-        <Spinner
-            android:id="@+id/spCategory"
-            android:layout_width="match_parent"
-            android:layout_height="50dp"
-            android:layout_marginBottom="12dp"
-            android:background="@android:drawable/btn_dropdown"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etPrice"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="numberDecimal"/>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <EditText
-            android:id="@+id/etProdDesc"
-            android:layout_width="match_parent"
-            android:layout_height="100dp"
-            android:hint="Product Description..."
-            android:gravity="top|start"
-            android:background="@android:drawable/edit_text"
-            android:padding="8dp"
-            android:layout_marginBottom="24dp"/>
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:hint="Stock Qty">
 
-        <Button
-            android:id="@+id/btnUploadProduct"
-            android:layout_width="match_parent"
-            android:layout_height="60dp"
-            android:text="Upload Product"
-            android:backgroundTint="#FF9800"
-            android:textStyle="bold"/>
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etStock"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:inputType="number"/>
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
-        <ProgressBar
-            android:id="@+id/progressBar"
+        <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:visibility="gone"
-            android:layout_marginTop="16dp"/>
+            android:text="Category"
+            android:layout_marginTop="8dp"
+            android:textColor="#5D4037"/>
+
+        <RadioGroup
+            android:id="@+id/rgCategory"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+            <RadioButton android:id="@+id/rbClothing" android:text="Clothing" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbShoes" android:text="Shoes" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbElectronics" android:text="Electronics" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+        </RadioGroup>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Delivery Charges (PKR)"
+            android:layout_marginBottom="8dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDelivery"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="numberDecimal"
+                android:text="0"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Description"
+            android:layout_marginBottom="16dp">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textMultiLine"
+                android:minLines="3"
+                android:gravity="top"/>
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <Button
+            android:id="@+id/btnSaveProduct"
+            android:layout_width="match_parent"
+            android:layout_height="50dp"
+            android:text="Save Product"
+            android:backgroundTint="#5D4037"
+            android:textColor="#FFFFFF"/>
 
     </LinearLayout>
 </ScrollView>

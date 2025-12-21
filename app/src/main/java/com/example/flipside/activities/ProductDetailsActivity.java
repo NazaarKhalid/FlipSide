@@ -1,5 +1,6 @@
 package com.example.flipside.activities;
 
+import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -14,20 +15,18 @@ import androidx.appcompat.app.AppCompatActivity;
 import com.example.flipside.R;
 import com.example.flipside.models.CartItem;
 import com.example.flipside.models.Product;
-import com.example.flipside.models.User;
 import com.google.android.material.chip.Chip;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue; // Make sure this is imported
 import com.google.firebase.firestore.FirebaseFirestore;
 
 public class ProductDetailsActivity extends AppCompatActivity {
 
-    // UI Components (Updated to match your new Beige XML)
     private ImageView btnBack, ivProductImage;
     private TextView tvProductName, tvProductPrice, tvProductDesc;
     private Chip chipSeller;
-    private Button btnAddToCart;
+    private Button btnAddToCart, btnContactSeller, btnFollow; // Added btnFollow
 
-    // Backend Variables
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String productId;
@@ -41,10 +40,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
 
-        // 1. Get the Product ID passed from the Dashboard
-        productId = getIntent().getStringExtra("product_id");
-
-        // 2. Initialize Views
+        // Initialize Views
         btnBack = findViewById(R.id.btnBack);
         ivProductImage = findViewById(R.id.ivProductImage);
         tvProductName = findViewById(R.id.tvProductName);
@@ -52,36 +48,111 @@ public class ProductDetailsActivity extends AppCompatActivity {
         tvProductDesc = findViewById(R.id.tvProductDesc);
         chipSeller = findViewById(R.id.chipSeller);
         btnAddToCart = findViewById(R.id.btnAddToCart);
+        btnContactSeller = findViewById(R.id.btnContactSeller);
+        btnFollow = findViewById(R.id.btnFollow); // Initialize new button
 
-        // 3. Setup Buttons
-        btnBack.setOnClickListener(v -> finish()); // Go back to dashboard
+        // 1. Try to get data from Intent
+        if (getIntent().hasExtra("productId")) {
+            productId = getIntent().getStringExtra("productId");
 
-        btnAddToCart.setOnClickListener(v -> {
-            if (currentProduct != null) {
-                addToCart();
+            currentProduct = new Product();
+            currentProduct.setProductId(productId);
+            currentProduct.setName(getIntent().getStringExtra("name"));
+            currentProduct.setPrice(getIntent().getDoubleExtra("price", 0.0));
+            currentProduct.setDescription(getIntent().getStringExtra("description"));
+            currentProduct.setImageBase64(getIntent().getStringExtra("imageBase64"));
+            currentProduct.setSellerId(getIntent().getStringExtra("sellerId"));
+
+            updateUI(currentProduct);
+        } else {
+            productId = getIntent().getStringExtra("product_id");
+        }
+
+        if (productId == null) {
+            Toast.makeText(this, "Error: Product ID missing", Toast.LENGTH_SHORT).show();
+            finish();
+            return;
+        }
+
+        // Refresh data from Firestore
+        loadProductDetails(productId);
+
+        // --- BUTTON LISTENERS ---
+
+        btnBack.setOnClickListener(v -> finish());
+
+        btnAddToCart.setOnClickListener(v -> addToCart());
+
+        // Message Seller Logic
+        btnContactSeller.setOnClickListener(v -> {
+            if (mAuth.getCurrentUser() == null) {
+                Toast.makeText(this, "Please login to chat", Toast.LENGTH_SHORT).show();
+                return;
             }
+
+            if (currentProduct == null || currentProduct.getSellerId() == null) {
+                Toast.makeText(this, "Seller info loading...", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            String currentUserId = mAuth.getCurrentUser().getUid();
+            String sellerId = currentProduct.getSellerId();
+
+            if (sellerId.equals(currentUserId)) {
+                Toast.makeText(this, "You cannot message yourself!", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            Intent intent = new Intent(ProductDetailsActivity.this, ChatActivity.class);
+            intent.putExtra("receiverId", sellerId);
+            startActivity(intent);
         });
 
-        // 4. Load Data
-        if (productId != null) {
-            loadProductDetails(productId);
-        } else {
-            Toast.makeText(this, "Error: Product not found", Toast.LENGTH_SHORT).show();
-            finish();
-        }
+        // --- FOLLOW SELLER LOGIC ---
+        btnFollow.setOnClickListener(v -> {
+            if (mAuth.getCurrentUser() == null) {
+                Toast.makeText(this, "Login to follow sellers", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            if (currentProduct == null || currentProduct.getSellerId() == null) {
+                return;
+            }
+
+            String currentUserId = mAuth.getCurrentUser().getUid();
+            String sellerId = currentProduct.getSellerId();
+
+            if (sellerId.equals(currentUserId)) {
+                Toast.makeText(this, "You cannot follow yourself", Toast.LENGTH_SHORT).show();
+                return;
+            }
+
+            // Update User's "following" list in Firestore
+            db.collection("users").document(currentUserId)
+                    .update("following", FieldValue.arrayUnion(sellerId))
+                    .addOnSuccessListener(aVoid -> {
+                        Toast.makeText(this, "You are now following this seller!", Toast.LENGTH_SHORT).show();
+                        btnFollow.setText("Following");
+                        btnFollow.setEnabled(false);
+                        btnFollow.setAlpha(0.5f);
+                    })
+                    .addOnFailureListener(e -> {
+                        Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    });
+        });
     }
 
     private void loadProductDetails(String pid) {
         db.collection("products").document(pid).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
-                        currentProduct = documentSnapshot.toObject(Product.class);
-                        updateUI(currentProduct);
-                    } else {
-                        Toast.makeText(this, "Product no longer available", Toast.LENGTH_SHORT).show();
+                        Product fetchedProduct = documentSnapshot.toObject(Product.class);
+                        if (fetchedProduct != null) {
+                            currentProduct = fetchedProduct;
+                            updateUI(currentProduct);
+                        }
                     }
-                })
-                .addOnFailureListener(e -> Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show());
+                });
     }
 
     private void updateUI(Product product) {
@@ -89,41 +160,45 @@ public class ProductDetailsActivity extends AppCompatActivity {
         tvProductPrice.setText("PKR " + product.getPrice());
         tvProductDesc.setText(product.getDescription());
 
-        // Setup Seller Chip (Mock name if seller name isn't fetched yet)
-        chipSeller.setText("Seller ID: " + product.getSellerId().substring(0, 6) + "...");
+        if (product.getSellerId() != null) {
+            String shortId = product.getSellerId().length() > 6
+                    ? product.getSellerId().substring(0, 6)
+                    : product.getSellerId();
+            chipSeller.setText("Seller ID: " + shortId);
+        }
 
-        // Decode Image (Base64 string to Bitmap)
         if (product.getImageBase64() != null && !product.getImageBase64().isEmpty()) {
             try {
                 byte[] decodedString = Base64.decode(product.getImageBase64(), Base64.DEFAULT);
                 Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
                 ivProductImage.setImageBitmap(decodedByte);
             } catch (Exception e) {
-                ivProductImage.setImageResource(R.drawable.ic_box); // Fallback
+                ivProductImage.setImageResource(android.R.drawable.ic_menu_gallery);
             }
         }
     }
 
     private void addToCart() {
-        String uid = mAuth.getCurrentUser().getUid();
+        if (mAuth.getCurrentUser() == null) {
+            Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-        // Fetch User -> Get Buyer Profile -> Add to Cart
-        db.collection("users").document(uid).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    User user = documentSnapshot.toObject(User.class);
-                    if (user != null && user.getBuyerProfile() != null) {
+        if (currentProduct == null) {
+            Toast.makeText(this, "Product data is loading...", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-                        // Create Cart Item
-                        CartItem newItem = new CartItem(currentProduct, 1);
+        String userId = mAuth.getCurrentUser().getUid();
 
-                        // Add to local list
-                        user.getBuyerProfile().getCart().addItem(newItem);
+        CartItem cartItem = new CartItem(currentProduct, 1);
 
-                        // Save back to Firestore
-                        db.collection("users").document(uid).set(user)
-                                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Added to Cart!", Toast.LENGTH_SHORT).show())
-                                .addOnFailureListener(e -> Toast.makeText(this, "Failed to add to cart", Toast.LENGTH_SHORT).show());
-                    }
-                });
+        db.collection("carts").document(userId)
+                .collection("items").document(currentProduct.getProductId())
+                .set(cartItem)
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(ProductDetailsActivity.this, "Added to Cart!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(ProductDetailsActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

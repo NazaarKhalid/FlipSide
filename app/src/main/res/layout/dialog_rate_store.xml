@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="300dp"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="20dp"
-    android:background="#FFFFFF">
+    android:padding="24dp"
+    android:background="@android:color/white">
 
     <TextView
         android:layout_width="wrap_content"
@@ -12,6 +12,7 @@
         android:text="Rate Your Experience"
         android:textSize="20sp"
         android:textStyle="bold"
+        android:textColor="#5D4037"
         android:layout_gravity="center"
         android:layout_marginBottom="16dp"/>
 
@@ -22,22 +23,25 @@
         android:layout_gravity="center"
         android:numStars="5"
         android:stepSize="1.0"
-        android:progressTint="#FFC107"/>
+        android:theme="@style/Widget.AppCompat.RatingBar"/>
 
     <EditText
         android:id="@+id/etComment"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Write a comment..."
+        android:layout_height="100dp"
+        android:hint="Write a review..."
+        android:gravity="top"
+        android:background="#F5F5F5"
+        android:padding="12dp"
         android:layout_marginTop="16dp"
-        android:background="@android:drawable/edit_text"/>
+        android:layout_marginBottom="16dp"/>
 
     <Button
         android:id="@+id/btnSubmitReview"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Submit Review"
-        android:layout_marginTop="20dp"
-        android:backgroundTint="#4CAF50"/>
+        android:backgroundTint="#5D4037"
+        android:textColor="#FFFFFF"/>
 
 </LinearLayout>

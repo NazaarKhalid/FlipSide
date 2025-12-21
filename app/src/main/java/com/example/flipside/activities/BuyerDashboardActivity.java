@@ -11,9 +11,10 @@ import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.fragment.app.Fragment;
 
 import com.example.flipside.R;
+import com.example.flipside.fragments.ChatListFragment; // Import this
 import com.example.flipside.fragments.HomeFragment;
 import com.example.flipside.fragments.OrderHistoryFragment;
-import com.example.flipside.fragments.ProfileFragment; // Make sure this is imported
+import com.example.flipside.fragments.ProfileFragment;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.navigation.NavigationView;
 import com.google.firebase.auth.FirebaseAuth;
@@ -24,10 +25,11 @@ public class BuyerDashboardActivity extends AppCompatActivity {
     private NavigationView navigationView;
     private BottomNavigationView bottomNav;
 
-    // 1. Initialize all Fragments here
+    // Initialize Fragments
     private final Fragment homeFragment = new HomeFragment();
     private final Fragment orderHistoryFragment = new OrderHistoryFragment();
     private final Fragment profileFragment = new ProfileFragment();
+    private final Fragment chatListFragment = new ChatListFragment(); // 1. Add Chat Fragment
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -36,23 +38,27 @@ public class BuyerDashboardActivity extends AppCompatActivity {
 
         drawerLayout = findViewById(R.id.drawer_layout);
         navigationView = findViewById(R.id.nav_view_drawer);
-        bottomNav = findViewById(R.id.bottom_navigation);
+        bottomNav = findViewById(R.id.bottom_navigation); // Ensure this ID matches XML
 
-        // Header Logic (Hamburger Menu)
+        // Header Hamburger Logic
         ImageView ivMenu = findViewById(R.id.ivMenu);
-        ivMenu.setOnClickListener(v -> {
-            if (drawerLayout != null) {
-                drawerLayout.openDrawer(GravityCompat.START);
-            }
-        });
+        if (ivMenu != null) {
+            ivMenu.setOnClickListener(v -> {
+                if (drawerLayout != null) {
+                    drawerLayout.openDrawer(GravityCompat.START);
+                }
+            });
+        }
 
         setupBottomNav();
         setupDrawer();
 
         // Load Home Fragment by default
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, homeFragment)
-                .commit();
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragment_container, homeFragment)
+                    .commit();
+        }
     }
 
     private void setupBottomNav() {
@@ -62,14 +68,22 @@ public class BuyerDashboardActivity extends AppCompatActivity {
 
             if (id == R.id.nav_home) {
                 selectedFragment = homeFragment;
-            } else if (id == R.id.nav_orders) {
+            }
+            else if (id == R.id.nav_messages) {
+                // 2. CHANGED: Load the Chat Fragment instead of Toast
+                selectedFragment = chatListFragment;
+            }
+            else if (id == R.id.nav_sell) {
+                // DIRECT ACTION: Open AddProductActivity
+                Intent intent = new Intent(BuyerDashboardActivity.this, AddProductActivity.class);
+                startActivity(intent);
+                return false; // Don't highlight the tab
+            }
+            else if (id == R.id.nav_orders) {
                 selectedFragment = orderHistoryFragment;
-            } else if (id == R.id.nav_profile) {
-                // 2. This now loads the ProfileFragment instead of showing a Toast
+            }
+            else if (id == R.id.nav_profile) {
                 selectedFragment = profileFragment;
-            } else if (id == R.id.menu_logout) {
-                logout();
-                return true;
             }
 
             if (selectedFragment != null) {
@@ -85,6 +99,8 @@ public class BuyerDashboardActivity extends AppCompatActivity {
     private void setupDrawer() {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
+
+            // Logout logic is here (Side Drawer)
             if (id == R.id.menu_logout) {
                 logout();
             } else if (id == R.id.menu_settings) {
@@ -96,7 +112,6 @@ public class BuyerDashboardActivity extends AppCompatActivity {
         });
     }
 
-    // Allow Fragments to open the drawer
     public void openDrawer() {
         if (drawerLayout != null) {
             drawerLayout.openDrawer(GravityCompat.START);

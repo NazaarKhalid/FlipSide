@@ -6,57 +6,54 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.TextUtils;
-import android.view.View;
-import android.widget.ArrayAdapter;
+import android.util.Base64;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ProgressBar;
-import android.widget.Spinner;
+import android.widget.RadioGroup;
 import android.widget.Toast;
+
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 
+import com.example.flipside.R;
+import com.example.flipside.models.Chat;
+import com.example.flipside.models.Message;
+import com.example.flipside.models.Product;
+import com.google.android.material.textfield.TextInputEditText;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
-import com.example.flipside.models.Product;
-import com.example.flipside.models.User;
-import com.example.flipside.utils.ImageUtils;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.Arrays;
+import java.util.UUID;
 
 public class AddProductActivity extends AppCompatActivity {
 
+    private TextInputEditText etName, etPrice, etStock, etDelivery, etDescription;
+    private RadioGroup rgCategory;
     private ImageView ivProductImage;
-    private EditText etProdName, etProdPrice, etProdStock, etProdDesc;
-    private Spinner spCategory;
-    private Button btnUploadProduct;
-    private ProgressBar progressBar;
+    private Button btnSaveProduct;
 
-    private Uri imageUri;
-    private Bitmap selectedBitmap;
-    private String currentUserId;
-    private String myStoreId;
-
+    private String selectedImageBase64 = "";
     private FirebaseFirestore db;
-    private FirebaseAuth mAuth;
+    private String currentUserId;
 
+    // Image Picker Launcher
     private final ActivityResultLauncher<Intent> imagePickerLauncher = registerForActivityResult(
             new ActivityResultContracts.StartActivityForResult(),
             result -> {
                 if (result.getResultCode() == RESULT_OK && result.getData() != null) {
-                    imageUri = result.getData().getData();
+                    Uri imageUri = result.getData().getData();
                     try {
-                        selectedBitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
-                        ivProductImage.setImageBitmap(selectedBitmap);
-                        ivProductImage.setAlpha(1.0f);
-                        ivProductImage.setPadding(0,0,0,0);
+                        Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContentResolver(), imageUri);
+                        ivProductImage.setImageBitmap(bitmap);
+                        ivProductImage.setScaleType(ImageView.ScaleType.CENTER_CROP);
+                        selectedImageBase64 = encodeImage(bitmap);
                     } catch (IOException e) {
                         e.printStackTrace();
+                        Toast.makeText(this, "Failed to load image", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
@@ -65,115 +62,148 @@ public class AddProductActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(com.example.flipside.R.layout.activity_add_product);
+        setContentView(R.layout.activity_add_product);
 
         db = FirebaseFirestore.getInstance();
-        mAuth = FirebaseAuth.getInstance();
+        currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        if (mAuth.getCurrentUser() == null) {
-            finish();
-            return;
-        }
-        currentUserId = mAuth.getCurrentUser().getUid();
+        initViews();
 
-        ivProductImage = findViewById(com.example.flipside.R.id.ivProductImage);
-        etProdName = findViewById(com.example.flipside.R.id.etProdName);
-        etProdPrice = findViewById(com.example.flipside.R.id.etProdPrice);
-        etProdStock = findViewById(com.example.flipside.R.id.etProdStock);
-        etProdDesc = findViewById(com.example.flipside.R.id.etProdDesc);
-        spCategory = findViewById(com.example.flipside.R.id.spCategory);
-        btnUploadProduct = findViewById(com.example.flipside.R.id.btnUploadProduct);
-        progressBar = findViewById(com.example.flipside.R.id.progressBar);
-
-        String[] categories = {"Clothing", "Shoes", "Accessories", "Electronics", "Books"};
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, android.R.layout.simple_spinner_dropdown_item, categories);
-        spCategory.setAdapter(adapter);
-
-        fetchStoreId();
-
-        ivProductImage.setOnClickListener(v -> {
-            Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-            imagePickerLauncher.launch(intent);
-        });
-
-        btnUploadProduct.setOnClickListener(v -> uploadProduct());
+        ivProductImage.setOnClickListener(v -> pickImage());
+        btnSaveProduct.setOnClickListener(v -> saveProduct());
     }
 
-    private void fetchStoreId() {
-        db.collection("users").document(currentUserId).get()
-                .addOnSuccessListener(documentSnapshot -> {
-                    if (documentSnapshot.exists()) {
-                        User user = documentSnapshot.toObject(User.class);
-                        if (user != null && user.isSeller()) {
-                            myStoreId = user.getSellerProfile().getStore().getStoreId();
-                        } else {
-                            Toast.makeText(this, "Error: You are not a seller!", Toast.LENGTH_SHORT).show();
-                            finish();
+    private void initViews() {
+        etName = findViewById(R.id.etName);
+        etPrice = findViewById(R.id.etPrice);
+        etStock = findViewById(R.id.etStock);
+        etDelivery = findViewById(R.id.etDelivery);
+        etDescription = findViewById(R.id.etDescription);
+        rgCategory = findViewById(R.id.rgCategory);
+        ivProductImage = findViewById(R.id.ivProductImage);
+        btnSaveProduct = findViewById(R.id.btnSaveProduct);
+    }
+
+    private void pickImage() {
+        Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        imagePickerLauncher.launch(intent);
+    }
+
+    private String encodeImage(Bitmap bitmap) {
+        int maxWidth = 800;
+        int height = (int) (bitmap.getHeight() * ((float) maxWidth / bitmap.getWidth()));
+        Bitmap resized = Bitmap.createScaledBitmap(bitmap, maxWidth, height, true);
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        resized.compress(Bitmap.CompressFormat.JPEG, 60, baos);
+        byte[] bytes = baos.toByteArray();
+        return Base64.encodeToString(bytes, Base64.DEFAULT);
+    }
+
+    private void saveProduct() {
+        String name = etName.getText().toString().trim();
+        String priceStr = etPrice.getText().toString().trim();
+        String stockStr = etStock.getText().toString().trim();
+        String deliveryStr = etDelivery.getText().toString().trim();
+        String desc = etDescription.getText().toString().trim();
+
+        int selectedId = rgCategory.getCheckedRadioButtonId();
+        String category = "";
+        if (selectedId == R.id.rbClothing) category = "Clothing";
+        else if (selectedId == R.id.rbShoes) category = "Shoes";
+        else if (selectedId == R.id.rbElectronics) category = "Electronics";
+
+        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceStr) || TextUtils.isEmpty(stockStr) || TextUtils.isEmpty(category)) {
+            Toast.makeText(this, "Please fill all required fields", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        if (selectedImageBase64.isEmpty()) {
+            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        double price = Double.parseDouble(priceStr);
+        int stock = Integer.parseInt(stockStr);
+        double delivery = TextUtils.isEmpty(deliveryStr) ? 0.0 : Double.parseDouble(deliveryStr);
+
+        String productId = UUID.randomUUID().toString();
+
+        Product newProduct = new Product(
+                productId,
+                currentUserId,
+                currentUserId,
+                name,
+                desc,
+                stock,
+                price,
+                delivery,
+                category
+        );
+        newProduct.setImageBase64(selectedImageBase64);
+
+        btnSaveProduct.setEnabled(false);
+        btnSaveProduct.setText("Saving...");
+
+        //
+        // Logic: Save Product -> Success -> Trigger Notify -> Finish
+        db.collection("products").document(productId).set(newProduct)
+                .addOnSuccessListener(aVoid -> {
+                    Toast.makeText(this, "Product Added!", Toast.LENGTH_SHORT).show();
+
+                    // --- THE FIX IS HERE ---
+                    // We must call this BEFORE finishing the activity
+                    notifyFollowers(name);
+
+                    finish();
+                })
+                .addOnFailureListener(e -> {
+                    btnSaveProduct.setEnabled(true);
+                    btnSaveProduct.setText("Save Product");
+                    Toast.makeText(this, "Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                });
+    }
+
+    // --- HELPER METHODS (These were fine, just unused) ---
+
+    private void notifyFollowers(String productName) {
+        String messageContent = "Hey! I just posted a new product: " + productName + ". Check it out!";
+        String sellerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+
+        // Find users who have this seller in their 'following' list
+        //
+        db.collection("users").whereArrayContains("following", sellerId).get()
+                .addOnSuccessListener(queryDocumentSnapshots -> {
+                    if (!queryDocumentSnapshots.isEmpty()) {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
+                            String followerId = doc.getString("userId");
+                            // Send the automated message
+                            sendAutomatedMessage(sellerId, followerId, messageContent);
                         }
                     }
                 });
     }
 
-    private void uploadProduct() {
-        String name = etProdName.getText().toString().trim();
-        String priceStr = etProdPrice.getText().toString().trim();
-        String stockStr = etProdStock.getText().toString().trim();
-        String desc = etProdDesc.getText().toString().trim();
-        String categoryName = spCategory.getSelectedItem().toString();
+    private void sendAutomatedMessage(String senderId, String receiverId, String content) {
+        String chatId;
+        if (senderId.compareTo(receiverId) < 0) chatId = senderId + "_" + receiverId;
+        else chatId = receiverId + "_" + senderId;
 
-        if (TextUtils.isEmpty(name) || TextUtils.isEmpty(priceStr) || TextUtils.isEmpty(stockStr)) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        if (selectedBitmap == null) {
-            Toast.makeText(this, "Please select an image", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        Message autoMessage = new Message(UUID.randomUUID().toString(), senderId, content);
 
-        progressBar.setVisibility(View.VISIBLE);
-        btnUploadProduct.setEnabled(false);
-
-        String imageBase64 = ImageUtils.bitmapToString(selectedBitmap);
-
-        String productId = db.collection("products").document().getId();
-        double price = Double.parseDouble(priceStr);
-        int stock = Integer.parseInt(stockStr);
-
-        Product newProduct = new Product(productId, currentUserId, myStoreId, name, desc, stock, price, 0.0, categoryName);
-        newProduct.setImageBase64(imageBase64);
-
-        db.collection("products").document(productId).set(newProduct)
-                .addOnSuccessListener(aVoid -> {
-                    Toast.makeText(this, "Product Uploaded!", Toast.LENGTH_SHORT).show();
-                    sendNotifications(name);
-                    finish();
-                })
-                .addOnFailureListener(e -> {
-                    progressBar.setVisibility(View.GONE);
-                    btnUploadProduct.setEnabled(true);
-                    Toast.makeText(this, "Upload Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                });
-    }
-
-    private void sendNotifications(String productName) {
-        db.collection("users").document(currentUserId).get().addOnSuccessListener(doc -> {
-            User seller = doc.toObject(User.class);
-            if (seller != null && seller.getSellerProfile().getStore() != null) {
-                List<String> followers = seller.getSellerProfile().getStore().getFollowers();
-
-                if (followers != null && !followers.isEmpty()) {
-                    for (String followerId : followers) {
-                        Map<String, Object> notification = new HashMap<>();
-                        notification.put("title", "New Product Alert!");
-                        notification.put("message", seller.getSellerProfile().getStore().getStoreName() + " added: " + productName);
-                        notification.put("timestamp", System.currentTimeMillis());
-                        notification.put("read", false);
-
-                        db.collection("users").document(followerId)
-                                .collection("notifications").add(notification);
+        db.collection("chats").document(chatId).get()
+                .addOnSuccessListener(documentSnapshot -> {
+                    Chat chat;
+                    if (documentSnapshot.exists()) {
+                        chat = documentSnapshot.toObject(Chat.class);
+                        if (chat != null) {
+                            chat.addMessage(autoMessage);
+                        }
+                    } else {
+                        chat = new Chat(chatId, Arrays.asList(senderId, receiverId));
+                        chat.addMessage(autoMessage);
                     }
-                }
-            }
-        });
+                    if (chat != null) {
+                        db.collection("chats").document(chatId).set(chat);
+                    }
+                });
     }
 }

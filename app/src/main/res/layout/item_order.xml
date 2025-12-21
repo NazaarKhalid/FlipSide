@@ -1,48 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="16dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@color/white">
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="8dp"
+    app:cardCornerRadius="12dp"
+    app:cardElevation="3dp"
+    app:cardBackgroundColor="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="16dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:orientation="horizontal">
 
             <TextView
-                android:id="@+id/tvOrderId"
+                android:id="@+id/tvOrderDate"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:text="Order #12345678"
-                android:fontFamily="sans-serif-medium"
-                android:textSize="16sp"
-                android:textColor="#3E2723"/>
+                android:text="Date"
+                android:textSize="12sp"
+                android:textColor="#757575"/>
 
             <TextView
                 android:id="@+id/tvOrderStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="PLACED"
-                android:textSize="12sp"
+                android:text="STATUS"
                 android:textStyle="bold"
-                android:textColor="#FFFFFF"
-                android:background="#8D6E63"
-                android:paddingHorizontal="12dp"
-                android:paddingVertical="4dp"/>
+                android:textSize="12sp"
+                android:textColor="#F57C00"/>
         </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvOrderId"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Order #ID"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="#5D4037"
+            android:layout_marginTop="4dp"/>
 
         <View
             android:layout_width="match_parent"
@@ -54,54 +59,26 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:layout_marginBottom="8dp">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Date Placed:"
-                android:textColor="#757575"/>
-
-            <TextView
-                android:id="@+id/tvOrderDate"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Oct 24, 2023"
-                android:textStyle="bold"
-                android:textColor="#5D4037"/>
-        </LinearLayout>
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal">
-
-            <TextView
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Total Amount:"
-                android:textColor="#757575"/>
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/tvOrderTotal"
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="PKR 4,500"
+                android:layout_weight="1"
+                android:text="PKR 0.0"
                 android:textSize="18sp"
                 android:textStyle="bold"
                 android:textColor="#388E3C"/>
-        </LinearLayout>
 
-        <Button
-            android:id="@+id/btnRateOrder"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="Rate Seller"
-            android:textColor="#5D4037"
-            android:backgroundTint="#F5F5DC"
-            style="@style/Widget.MaterialComponents.Button.TextButton"/>
+            <Button
+                android:id="@+id/btnRateOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:text="Rate"
+                android:textSize="12sp"
+                android:backgroundTint="#5D4037"
+                android:textColor="#FFFFFF"/>
+        </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>
