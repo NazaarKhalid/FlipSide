@@ -2,6 +2,9 @@ package com.example.flipside.adapters;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.util.Base64;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -57,14 +60,31 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
             }
         }
 
-        // 2. Fetch Other User's Name
-        // (For production, cache this or store name in Chat object to reduce reads)
+        // 2. Fetch Other User's Details (Name AND Image)
         final String finalOtherUserId = otherUserId;
+
+        // Reset to default while loading to prevent recycling issues
+        holder.ivProfile.setImageResource(android.R.drawable.sym_def_app_icon);
+        holder.tvName.setText("Loading...");
+
         db.collection("users").document(otherUserId).get()
                 .addOnSuccessListener(documentSnapshot -> {
                     if (documentSnapshot.exists()) {
                         String name = documentSnapshot.getString("name");
                         holder.tvName.setText(name != null ? name : "Unknown User");
+
+                        // --- NEW: DECODE PROFILE IMAGE ---
+                        String base64Image = documentSnapshot.getString("profileImageBase64");
+                        if (base64Image != null && !base64Image.isEmpty()) {
+                            try {
+                                byte[] decodedString = Base64.decode(base64Image, Base64.DEFAULT);
+                                Bitmap decodedByte = BitmapFactory.decodeByteArray(decodedString, 0, decodedString.length);
+                                holder.ivProfile.setImageBitmap(decodedByte);
+                            } catch (Exception e) {
+                                // If decoding fails, keep default
+                                holder.ivProfile.setImageResource(android.R.drawable.sym_def_app_icon);
+                            }
+                        }
                     }
                 });
 
@@ -84,7 +104,6 @@ public class ChatListAdapter extends RecyclerView.Adapter<ChatListAdapter.ChatVi
         holder.itemView.setOnClickListener(v -> {
             Intent intent = new Intent(context, ChatActivity.class);
             intent.putExtra("receiverId", finalOtherUserId);
-            // We pass receiverId so ChatActivity can generate the correct chatId
             context.startActivity(intent);
         });
     }

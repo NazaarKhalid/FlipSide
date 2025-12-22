@@ -30,10 +30,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private Context context;
     private List<Order> orderList;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("dd MMM yyyy, hh:mm a", Locale.getDefault());
+    private String currentUserId;
 
     public OrderAdapter(Context context, List<Order> orderList) {
         this.context = context;
         this.orderList = orderList;
+        // Cache the ID once to improve performance
+        if (FirebaseAuth.getInstance().getCurrentUser() != null) {
+            this.currentUserId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+        }
     }
 
     @NonNull
@@ -47,45 +52,74 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     public void onBindViewHolder(@NonNull OrderViewHolder holder, int position) {
         Order order = orderList.get(position);
 
-        // 1. Order ID
+        // 1. Display Order ID (Shortened)
         String orderIdDisplay = (order.getOrderId() != null && order.getOrderId().length() > 8)
                 ? order.getOrderId().substring(0, 8).toUpperCase()
                 : order.getOrderId();
         holder.tvOrderId.setText("Order #" + orderIdDisplay);
 
-        // 2. Date
+        // 2. Display Date
         if (order.getOrderDate() != null) {
             holder.tvDate.setText(dateFormat.format(order.getOrderDate()));
         }
 
-        // 3. Price
+        // 3. Display Price
         holder.tvTotal.setText("PKR " + order.getTotalAmount());
 
-        // 4. Status Styling
+        // 4. Status Display & Styling
         String status = (order.getStatus() != null) ? order.getStatus().toString() : "PLACED";
         holder.tvStatus.setText(status);
 
+        // Define Colors
+        int colorGreen = Color.parseColor("#388E3C");
+        int colorRed = Color.parseColor("#D32F2F");
+        int colorOrange = Color.parseColor("#F57C00");
+
+        // 5. LOGIC: Button Visibility & Color
+        // Check if I am the seller
+        boolean isSeller = (order.getSellerId() != null && order.getSellerId().equals(currentUserId));
+
         if ("DELIVERED".equalsIgnoreCase(status)) {
-            holder.tvStatus.setTextColor(Color.parseColor("#388E3C")); // Green
-            holder.btnRate.setVisibility(View.VISIBLE);
+            holder.tvStatus.setTextColor(colorGreen);
+
+            // Only show Rate button if I am the BUYER (not the seller)
+            if (!isSeller) {
+                holder.btnRate.setVisibility(View.VISIBLE);
+            } else {
+                holder.btnRate.setVisibility(View.GONE);
+            }
+
         } else if ("CANCELLED".equalsIgnoreCase(status)) {
-            holder.tvStatus.setTextColor(Color.parseColor("#D32F2F")); // Red
+            holder.tvStatus.setTextColor(colorRed);
             holder.btnRate.setVisibility(View.GONE);
         } else {
-            holder.tvStatus.setTextColor(Color.parseColor("#F57C00")); // Orange
+            // Placed, Shipped, etc.
+            holder.tvStatus.setTextColor(colorOrange);
             holder.btnRate.setVisibility(View.GONE);
         }
 
-        // 5. Rate Logic
+        // 6. Rate Button Click Listener
         holder.btnRate.setOnClickListener(v -> {
+            // SAFETY CHECK: Ensure list is not null and not empty
             if (order.getOrderItems() != null && !order.getOrderItems().isEmpty()) {
-                // Get store ID from the first item
-                String storeId = order.getOrderItems().get(0).getProduct().getStoreId();
-                if (storeId != null) {
-                    showRatingDialog(context, storeId);
-                } else {
-                    Toast.makeText(context, "Cannot rate: Store ID missing", Toast.LENGTH_SHORT).show();
+
+                // 1. Try to get Seller ID from the Order object itself
+                String targetId = order.getSellerId();
+
+                // 2. Fallback: If null, try to get Store ID from the first product
+                if (targetId == null) {
+                    if (order.getOrderItems().get(0).getProduct() != null) {
+                        targetId = order.getOrderItems().get(0).getProduct().getStoreId();
+                    }
                 }
+
+                if (targetId != null) {
+                    showRatingDialog(context, targetId);
+                } else {
+                    Toast.makeText(context, "Cannot rate: Seller info missing", Toast.LENGTH_SHORT).show();
+                }
+            } else {
+                Toast.makeText(context, "Error: Order has no items", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -98,7 +132,9 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
     private void showRatingDialog(Context context, String storeId) {
         Dialog dialog = new Dialog(context);
         dialog.setContentView(R.layout.dialog_rate_store);
-        dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        if (dialog.getWindow() != null) {
+            dialog.getWindow().setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        }
 
         RatingBar ratingBar = dialog.findViewById(R.id.ratingBar);
         EditText etComment = dialog.findViewById(R.id.etComment);
@@ -108,16 +144,15 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
             float ratingFloat = ratingBar.getRating();
             String comment = etComment.getText().toString();
 
-            if (FirebaseAuth.getInstance().getCurrentUser() == null) return;
-            String reviewerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
+            if (currentUserId == null) return;
 
             String reviewId = "rev_" + System.currentTimeMillis();
 
-            // FIXED: Casting float to double to match your Model
+            // Create Review Object
             Review review = new Review(
                     reviewId,
-                    reviewerId,
-                    storeId,        // This maps to 'targetStoreId' in your constructor
+                    currentUserId,
+                    storeId,
                     (double) ratingFloat,
                     comment
             );
@@ -140,7 +175,6 @@ public class OrderAdapter extends RecyclerView.Adapter<OrderAdapter.OrderViewHol
 
         public OrderViewHolder(@NonNull View itemView) {
             super(itemView);
-            // Ensure these IDs match your item_order.xml
             tvOrderId = itemView.findViewById(R.id.tvOrderId);
             tvStatus = itemView.findViewById(R.id.tvOrderStatus);
             tvDate = itemView.findViewById(R.id.tvOrderDate);

@@ -17,9 +17,12 @@ import com.example.flipside.models.Order;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
+import com.google.firebase.firestore.WriteBatch;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 public class CheckoutActivity extends AppCompatActivity {
@@ -31,7 +34,7 @@ public class CheckoutActivity extends AppCompatActivity {
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String userId;
-    private double totalPrice;
+    private double totalPrice; // This is the total displayed, but we recalculate per seller
 
     private List<CartItem> itemsToOrder;
 
@@ -53,10 +56,10 @@ public class CheckoutActivity extends AppCompatActivity {
 
         initViews();
 
-        // 1. DISABLE BUTTON INITIALLY (Prevent clicking before load)
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Loading Cart...");
 
+        // Display total from previous screen just for UI
         totalPrice = getIntent().getDoubleExtra("totalPrice", 0.0);
         tvTotal.setText("PKR " + totalPrice);
 
@@ -74,7 +77,6 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void loadCartItems() {
-        // Fetch items from the correct collection path
         db.collection("carts").document(userId).collection("items")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -84,7 +86,6 @@ public class CheckoutActivity extends AppCompatActivity {
                         for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                             itemsToOrder.add(doc.toObject(CartItem.class));
                         }
-                        // 2. ENABLE BUTTON ONLY AFTER DATA ARRIVES
                         btnPlaceOrder.setEnabled(true);
                         btnPlaceOrder.setText("Confirm Order");
                     } else {
@@ -108,41 +109,65 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        // Final safety check
         if (itemsToOrder.isEmpty()) {
-            Toast.makeText(this, "Cart data is missing. Please go back and try again.", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Cart data is missing.", Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Processing...");
 
-        // Create Address
+        // Create Shared Address Object
         String newAddressId = UUID.randomUUID().toString();
-        Address deliveryAddress = new Address(
-                newAddressId,
-                userId,
-                street,
-                city,
-                "00000",
-                true
-        );
+        Address deliveryAddress = new Address(newAddressId, userId, street, city, "00000", true);
 
-        // Create Order
-        String orderId = UUID.randomUUID().toString();
-        Order newOrder = new Order(
-                orderId,
-                userId,
-                itemsToOrder,
-                totalPrice,
-                deliveryAddress
-        );
+        // --- STEP 1: GROUP ITEMS BY SELLER ID ---
+        Map<String, List<CartItem>> sellerGroups = new HashMap<>();
 
-        // Save Order
-        db.collection("orders").document(orderId).set(newOrder)
-                .addOnSuccessListener(aVoid -> {
-                    clearCartAndFinish();
-                })
+        for (CartItem item : itemsToOrder) {
+            if (item.getProduct() != null) {
+                String sellerId = item.getProduct().getSellerId();
+                if (sellerId != null) {
+                    if (!sellerGroups.containsKey(sellerId)) {
+                        sellerGroups.put(sellerId, new ArrayList<>());
+                    }
+                    sellerGroups.get(sellerId).add(item);
+                }
+            }
+        }
+
+        // --- STEP 2: BATCH WRITE TO FIRESTORE ---
+        WriteBatch batch = db.batch();
+
+        for (Map.Entry<String, List<CartItem>> entry : sellerGroups.entrySet()) {
+            String sellerId = entry.getKey();
+            List<CartItem> sellerItems = entry.getValue();
+
+            // Calculate total for THIS specific seller
+            double sellerOrderTotal = 0;
+            for (CartItem item : sellerItems) {
+                sellerOrderTotal += (item.getProduct().getPrice() * item.getQuantity());
+            }
+
+            String orderId = UUID.randomUUID().toString();
+
+            // Create Order Object (Using the NEW Constructor with sellerId)
+            Order subOrder = new Order(
+                    orderId,
+                    userId,
+                    sellerId,       // <--- Passed correctly now
+                    sellerItems,
+                    sellerOrderTotal,
+                    deliveryAddress
+            );
+
+            // Add to batch
+            batch.set(db.collection("orders").document(orderId), subOrder);
+        }
+
+        // --- STEP 3: COMMIT BATCH ---
+        batch.commit()
+                .addOnSuccessListener(aVoid -> clearCartAndFinish())
                 .addOnFailureListener(e -> {
                     btnPlaceOrder.setEnabled(true);
                     btnPlaceOrder.setText("Confirm Order");
@@ -151,7 +176,6 @@ public class CheckoutActivity extends AppCompatActivity {
     }
 
     private void clearCartAndFinish() {
-        // Delete items from Firestore cart
         db.collection("carts").document(userId).collection("items")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {

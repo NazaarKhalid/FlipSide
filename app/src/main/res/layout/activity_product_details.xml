@@ -20,14 +20,12 @@
             <FrameLayout
                 android:layout_width="match_parent"
                 android:layout_height="300dp">
-
                 <ImageView
                     android:id="@+id/ivProductImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:src="@android:drawable/ic_menu_gallery"
                     android:scaleType="centerCrop"/>
-
                 <ImageView
                     android:id="@+id/btnBack"
                     android:layout_width="40dp"
@@ -66,29 +64,39 @@
                     android:layout_marginTop="8dp"/>
 
                 <LinearLayout
+                    android:id="@+id/layoutSellerProfile"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
                     android:gravity="center_vertical"
-                    android:layout_marginTop="12dp">
+                    android:layout_marginTop="16dp"
+                    android:padding="12dp"
+                    android:clickable="true"
+                    android:focusable="true">
 
-                    <com.google.android.material.chip.Chip
-                        android:id="@+id/chipSeller"
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_menu_my_calendar"
+                        app:tint="#5D4037"/>
+
+                    <TextView
+                        android:id="@+id/tvSellerName"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Seller ID: ..."
+                        android:text="View Seller Profile"
+                        android:textStyle="bold"
                         android:textColor="#5D4037"
-                        app:chipBackgroundColor="#EFEBE9"/>
+                        android:layout_marginStart="12dp"/>
 
-                    <Button
-                        android:id="@+id/btnFollow"
-                        android:layout_width="wrap_content"
-                        android:layout_height="40dp"
-                        android:layout_marginStart="12dp"
-                        android:text="Follow"
-                        android:textSize="12sp"
-                        android:backgroundTint="#FFB74D"
-                        android:textColor="#FFFFFF"/>
+                    <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:src="@android:drawable/ic_media_play"
+                        app:tint="#8D6E63"
+                        android:rotation="0"/>
                 </LinearLayout>
 
                 <TextView
@@ -104,11 +112,10 @@
                     android:id="@+id/tvProductDesc"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Product details go here..."
+                    android:text="..."
                     android:textSize="16sp"
                     android:textColor="#757575"
-                    android:layout_marginTop="8dp"
-                    android:lineSpacingExtra="4dp"/>
+                    android:layout_marginTop="8dp"/>
             </LinearLayout>
         </LinearLayout>
     </ScrollView>
@@ -131,7 +138,6 @@
             android:text="Message"
             android:backgroundTint="#FFFFFF"
             android:textColor="#5D4037"
-            android:layout_marginEnd="8dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
         <Button
@@ -144,5 +150,4 @@
             android:textColor="#FFFFFF"
             android:layout_marginStart="8dp"/>
     </LinearLayout>
-
 </androidx.constraintlayout.widget.ConstraintLayout>

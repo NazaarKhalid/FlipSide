@@ -11,6 +11,8 @@ public class User {
     private String profileImageBase64;
 
     private String userType;
+    private long followersCount = 0;
+    private long followingCount = 0;
 
     private boolean isAdmin = false;
 
@@ -56,6 +58,11 @@ public class User {
 
     public BuyerProfile getBuyerProfile() { return buyerProfile; }
     public void setBuyerProfile(BuyerProfile buyerProfile) { this.buyerProfile = buyerProfile; }
+    public long getFollowersCount() { return followersCount; }
+    public void setFollowersCount(long followersCount) { this.followersCount = followersCount; }
+
+    public long getFollowingCount() { return followingCount; }
+    public void setFollowingCount(long followingCount) { this.followingCount = followingCount; }
 
     public SellerProfile getSellerProfile() { return sellerProfile; }
     public void setSellerProfile(SellerProfile sellerProfile) { this.sellerProfile = sellerProfile; }

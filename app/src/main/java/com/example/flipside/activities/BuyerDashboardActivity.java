@@ -99,31 +99,54 @@ public class BuyerDashboardActivity extends AppCompatActivity {
         navigationView.setNavigationItemSelectedListener(item -> {
             int id = item.getItemId();
 
-            if (id == R.id.menu_logout) {
+            // 1. DISCOVER / HOME -> Reset to General View
+            if (id == R.id.nav_home) {
+                switchToHomeAndReset();
+            }
+            // 2. LOGOUT
+            else if (id == R.id.menu_logout) {
                 logout();
             }
-            else if (id == R.id.menu_settings) {
-                Toast.makeText(this, "Settings clicked", Toast.LENGTH_SHORT).show();
-            }
-            // --- NEW: COMPLAINT MODULE HANDLER ---
+            // 3. COMPLAINTS
             else if (id == R.id.nav_complaint) {
-                Intent intent = new Intent(BuyerDashboardActivity.this, ComplaintActivity.class);
-                startActivity(intent);
+                startActivity(new Intent(BuyerDashboardActivity.this, ComplaintActivity.class));
             }
-            // --- OPTIONAL: Handle Categories if needed ---
+            // 4. CATEGORIES
             else if (id == R.id.cat_clothing) {
-                Toast.makeText(this, "Clothing Category", Toast.LENGTH_SHORT).show();
+                switchToHomeAndFilter("Clothing");
             }
             else if (id == R.id.cat_shoes) {
-                Toast.makeText(this, "Shoes Category", Toast.LENGTH_SHORT).show();
+                switchToHomeAndFilter("Shoes");
             }
             else if (id == R.id.cat_electronics) {
-                Toast.makeText(this, "Electronics Category", Toast.LENGTH_SHORT).show();
+                switchToHomeAndFilter("Electronics");
             }
 
             drawerLayout.closeDrawer(GravityCompat.START);
             return true;
         });
+    }
+
+    private void switchToHomeAndReset() {
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, homeFragment)
+                .commitNow();
+
+        if (homeFragment instanceof HomeFragment) {
+            ((HomeFragment) homeFragment).showGeneralView();
+        }
+    }
+
+    private void switchToHomeAndFilter(String category) {
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragment_container, homeFragment)
+                .commitNow();
+
+        if (homeFragment instanceof HomeFragment) {
+            ((HomeFragment) homeFragment).filterByCategory(category);
+        }
     }
 
     public void openDrawer() {

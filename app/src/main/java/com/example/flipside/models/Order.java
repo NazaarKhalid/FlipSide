@@ -5,14 +5,12 @@ import java.util.List;
 
 public class Order {
     public enum OrderStatus {
-        PLACED,
-        SHIPPED,
-        DELIVERED,
-        CANCELLED
+        PLACED, SHIPPED, DELIVERED, CANCELLED
     }
 
     private String orderId;
     private String customerId;
+    private String sellerId; // <--- NEW: Crucial for "My Sales" tab
     private List<CartItem> orderItems;
     private OrderStatus status;
     private double totalAmount;
@@ -20,14 +18,12 @@ public class Order {
     private Date orderDate;
     private Payment payment;
 
-    // default constructor
-    public Order() {
-    }
+    public Order() {}
 
-    // paramterized constructor
-    public Order(String orderId, String customerId, List<CartItem> orderItems, double totalAmount, Address shippingAddress) {
+    public Order(String orderId, String customerId, String sellerId, List<CartItem> orderItems, double totalAmount, Address shippingAddress) {
         this.orderId = orderId;
         this.customerId = customerId;
+        this.sellerId = sellerId; // <--- Initialize this
         this.orderItems = orderItems;
         this.totalAmount = totalAmount;
         this.shippingAddress = shippingAddress;
@@ -35,12 +31,15 @@ public class Order {
         this.orderDate = new Date();
     }
 
-    // getter setters
+    // Getters and Setters
     public String getOrderId() { return orderId; }
     public void setOrderId(String orderId) { this.orderId = orderId; }
 
     public String getCustomerId() { return customerId; }
     public void setCustomerId(String customerId) { this.customerId = customerId; }
+
+    public String getSellerId() { return sellerId; } // <--- New Getter
+    public void setSellerId(String sellerId) { this.sellerId = sellerId; } // <--- New Setter
 
     public List<CartItem> getOrderItems() { return orderItems; }
     public void setOrderItems(List<CartItem> orderItems) { this.orderItems = orderItems; }
@@ -59,13 +58,4 @@ public class Order {
 
     public Payment getPayment() { return payment; }
     public void setPayment(Payment payment) { this.payment = payment; }
-
-    // methods
-    public void updateOrderStatus(OrderStatus newStatus) {
-        this.status = newStatus;
-    }
-
-    public void cancelOrder() {
-        this.status = OrderStatus.CANCELLED;
-    }
 }

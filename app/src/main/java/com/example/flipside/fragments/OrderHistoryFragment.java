@@ -1,11 +1,13 @@
 package com.example.flipside.fragments;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -30,8 +32,12 @@ public class OrderHistoryFragment extends Fragment {
     private RecyclerView rvOrderHistory;
     private ProgressBar progressBar;
     private LinearLayout layoutEmptyState;
+    private TextView tvEmptyText;
     private OrderAdapter orderAdapter;
     private List<Order> orderList;
+
+    private TextView btnPurchases, btnSales;
+    private boolean isBuyerMode = true;
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
@@ -44,14 +50,12 @@ public class OrderHistoryFragment extends Fragment {
 
         db = FirebaseFirestore.getInstance();
         mAuth = FirebaseAuth.getInstance();
-
         if (mAuth.getCurrentUser() != null) {
             currentUserId = mAuth.getCurrentUser().getUid();
         }
 
-        rvOrderHistory = view.findViewById(R.id.rvOrderHistory);
-        progressBar = view.findViewById(R.id.progressBar);
-        layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
+        initViews(view);
+        setupToggleListeners();
 
         rvOrderHistory.setLayoutManager(new LinearLayoutManager(getContext()));
         orderList = new ArrayList<>();
@@ -63,14 +67,69 @@ public class OrderHistoryFragment extends Fragment {
         return view;
     }
 
+    private void initViews(View view) {
+        rvOrderHistory = view.findViewById(R.id.rvOrderHistory);
+        progressBar = view.findViewById(R.id.progressBar);
+        layoutEmptyState = view.findViewById(R.id.layoutEmptyState);
+        tvEmptyText = view.findViewById(R.id.tvEmptyText);
+        btnPurchases = view.findViewById(R.id.btnPurchases);
+        btnSales = view.findViewById(R.id.btnSales);
+    }
+
+    private void setupToggleListeners() {
+        btnPurchases.setOnClickListener(v -> {
+            if (!isBuyerMode) {
+                isBuyerMode = true;
+                updateToggleUI();
+                fetchOrders();
+            }
+        });
+
+        btnSales.setOnClickListener(v -> {
+            if (isBuyerMode) {
+                isBuyerMode = false;
+                updateToggleUI();
+                fetchOrders();
+            }
+        });
+    }
+
+    // --- FIX IS HERE ---
+    private void updateToggleUI() {
+        if (isBuyerMode) {
+            // My Purchases: Active
+            // CHANGED: setBackgroundResource -> setBackgroundColor
+            btnPurchases.setBackgroundColor(Color.parseColor("#5D4037"));
+            btnPurchases.setTextColor(Color.WHITE);
+
+            btnSales.setBackgroundColor(Color.TRANSPARENT);
+            btnSales.setTextColor(Color.parseColor("#757575")); // Grey
+
+            tvEmptyText.setText("No purchases yet");
+        } else {
+            // My Sales: Active
+            // CHANGED: setBackgroundResource -> setBackgroundColor
+            btnSales.setBackgroundColor(Color.parseColor("#5D4037"));
+            btnSales.setTextColor(Color.WHITE);
+
+            btnPurchases.setBackgroundColor(Color.TRANSPARENT);
+            btnPurchases.setTextColor(Color.parseColor("#757575"));
+
+            tvEmptyText.setText("No sales yet");
+        }
+    }
+
     private void fetchOrders() {
         if (currentUserId == null) return;
 
         progressBar.setVisibility(View.VISIBLE);
         layoutEmptyState.setVisibility(View.GONE);
+        rvOrderHistory.setVisibility(View.GONE);
+
+        String fieldToQuery = isBuyerMode ? "customerId" : "sellerId";
 
         db.collection("orders")
-                .whereEqualTo("customerId", currentUserId)
+                .whereEqualTo(fieldToQuery, currentUserId)
                 .orderBy("orderDate", Query.Direction.DESCENDING)
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
@@ -90,22 +149,17 @@ public class OrderHistoryFragment extends Fragment {
                                     orderList.add(order);
                                 }
                             } catch (Exception e) {
-                                e.printStackTrace();
+                                // Safe catch: Skip corrupted orders
+                                System.out.println("Skipping bad order: " + document.getId());
                             }
                         }
+                    }
 
-                        if (orderList.isEmpty()) {
-                            rvOrderHistory.setVisibility(View.GONE);
-                            layoutEmptyState.setVisibility(View.VISIBLE);
-                        } else {
-                            rvOrderHistory.setVisibility(View.VISIBLE);
-                            layoutEmptyState.setVisibility(View.GONE);
-                            orderAdapter.notifyDataSetChanged();
-                        }
-
-                    } else {
-                        rvOrderHistory.setVisibility(View.GONE);
+                    if (orderList.isEmpty()) {
                         layoutEmptyState.setVisibility(View.VISIBLE);
+                    } else {
+                        rvOrderHistory.setVisibility(View.VISIBLE);
+                        orderAdapter.notifyDataSetChanged();
                     }
                 })
                 .addOnFailureListener(e -> {
