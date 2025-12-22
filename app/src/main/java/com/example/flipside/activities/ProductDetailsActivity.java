@@ -41,21 +41,23 @@ public class ProductDetailsActivity extends AppCompatActivity {
 
         initViews();
 
-        // Get Intent Data
+        // 1. Get the ID from the Intent
         if (getIntent().hasExtra("productId")) {
             productId = getIntent().getStringExtra("productId");
-            currentProduct = new Product();
-            currentProduct.setProductId(productId);
-            currentProduct.setName(getIntent().getStringExtra("name"));
-            currentProduct.setPrice(getIntent().getDoubleExtra("price", 0.0));
-            currentProduct.setDescription(getIntent().getStringExtra("description"));
-            currentProduct.setImageBase64(getIntent().getStringExtra("imageBase64"));
-            currentProduct.setSellerId(getIntent().getStringExtra("sellerId"));
 
-            updateUI(currentProduct);
+            tvProductName.setText(getIntent().getStringExtra("name"));
+
         } else {
             productId = getIntent().getStringExtra("product_id");
-            if (productId != null) loadProductDetails(productId);
+        }
+
+        // 2. CRITICAL FIX: ALWAYS Load fresh details from Firestore
+        // This ensures we get the 'stockQuantity' and accurate 'sellerId'
+        if (productId != null) {
+            loadProductDetails(productId);
+        } else {
+            Toast.makeText(this, "Error: Product ID missing", Toast.LENGTH_SHORT).show();
+            finish();
         }
 
         setupListeners();
@@ -115,6 +117,33 @@ public class ProductDetailsActivity extends AppCompatActivity {
         tvProductPrice.setText("PKR " + product.getPrice());
         tvProductDesc.setText(product.getDescription());
 
+        // --- FIX 1: CHECK STOCK & OWNERSHIP ---
+        String currentUserId = mAuth.getCurrentUser() != null ? mAuth.getCurrentUser().getUid() : "";
+
+        // Check 1: Is this MY product?
+        if (product.getSellerId() != null && product.getSellerId().equals(currentUserId)) {
+            btnAddToCart.setEnabled(false);
+            btnAddToCart.setText("Your Item");
+            btnAddToCart.setAlpha(0.5f); // Make it look disabled
+
+            btnContactSeller.setEnabled(false);
+            btnContactSeller.setAlpha(0.5f);
+
+            // Optional: Hide Follow button logic too if you want
+        }
+        // Check 2: Is it Out of Stock?
+        else if (product.getStockQuantity() <= 0) {
+            btnAddToCart.setEnabled(false);
+            btnAddToCart.setText("Out of Stock");
+            btnAddToCart.setBackgroundColor(android.graphics.Color.GRAY); // Gray out button
+        }
+        // Otherwise: Normal State
+        else {
+            btnAddToCart.setEnabled(true);
+            btnAddToCart.setText("Add to Cart");
+            // Reset color if needed (depending on your theme)
+        }
+
         // Decode Image
         if (product.getImageBase64() != null && !product.getImageBase64().isEmpty()) {
             try {
@@ -126,7 +155,7 @@ public class ProductDetailsActivity extends AppCompatActivity {
             }
         }
 
-        // FETCH SELLER NAME (Replace ID with Name)
+        // Fetch Seller Name
         if (product.getSellerId() != null) {
             db.collection("users").document(product.getSellerId()).get()
                     .addOnSuccessListener(doc -> {
@@ -143,14 +172,32 @@ public class ProductDetailsActivity extends AppCompatActivity {
             Toast.makeText(this, "Please login first", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (currentProduct == null) return;
+
+        if (currentProduct == null) {
+            Toast.makeText(this, "Product data is loading...", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        // --- INVENTORY CHECK ---
+        if (currentProduct.getStockQuantity() <= 0) {
+            Toast.makeText(this, "Sorry! This item is Out of Stock.", Toast.LENGTH_LONG).show();
+            btnAddToCart.setEnabled(false);
+            btnAddToCart.setText("Out of Stock");
+            return;
+        }
+        // -----------------------
 
         String userId = mAuth.getCurrentUser().getUid();
+
+        // Check if item already exists in cart to increment quantity (Optional logic)
         CartItem cartItem = new CartItem(currentProduct, 1);
 
         db.collection("carts").document(userId)
                 .collection("items").document(currentProduct.getProductId())
                 .set(cartItem)
-                .addOnSuccessListener(aVoid -> Toast.makeText(this, "Added to Cart!", Toast.LENGTH_SHORT).show());
+                .addOnSuccessListener(aVoid ->
+                        Toast.makeText(ProductDetailsActivity.this, "Added to Cart!", Toast.LENGTH_SHORT).show())
+                .addOnFailureListener(e ->
+                        Toast.makeText(ProductDetailsActivity.this, "Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show());
     }
 }

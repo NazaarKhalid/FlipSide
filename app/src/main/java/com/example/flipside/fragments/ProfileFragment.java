@@ -47,6 +47,7 @@ public class ProfileFragment extends Fragment {
     private FirebaseAuth mAuth;
     private String currentUserId;
     private StoreAnalyticsFacade analyticsFacade;
+    private Button btnManageProducts;
 
     @Nullable
     @Override
@@ -93,6 +94,7 @@ public class ProfileFragment extends Fragment {
         gridSellerAnalytics = view.findViewById(R.id.gridSellerAnalytics);
         btnBecomeSeller = view.findViewById(R.id.btnBecomeSeller);
         btnEditProfile = view.findViewById(R.id.btnEditProfile);
+        btnManageProducts = view.findViewById(R.id.btnManageProducts);
     }
 
     private void setupListeners() {
@@ -100,6 +102,10 @@ public class ProfileFragment extends Fragment {
         btnEditProfile.setOnClickListener(v -> {
             Intent intent = new Intent(getContext(), EditProfileActivity.class);
             startActivity(intent);
+        });
+
+        btnManageProducts.setOnClickListener(v -> {
+            startActivity(new Intent(getContext(), com.example.flipside.activities.ManageProductsActivity.class));
         });
 
         // 2. Become Seller
@@ -196,6 +202,7 @@ public class ProfileFragment extends Fragment {
     private void showSellerDashboard() {
         cardBecomeSeller.setVisibility(View.GONE);
         gridSellerAnalytics.setVisibility(View.VISIBLE);
+        btnManageProducts.setVisibility(View.VISIBLE);
 
         analyticsFacade.fetchStoreStats(currentUserId, new StoreAnalyticsFacade.AnalyticsCallback() {
             @Override

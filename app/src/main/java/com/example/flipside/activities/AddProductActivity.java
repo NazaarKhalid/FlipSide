@@ -166,19 +166,20 @@ public class AddProductActivity extends AppCompatActivity {
 
     private void notifyFollowers(String productName) {
         String messageContent = "Hey! I just posted a new product: " + productName + ". Check it out!";
-        String sellerId = FirebaseAuth.getInstance().getCurrentUser().getUid();
 
-        // Find users who have this seller in their 'following' list
-        //
-        db.collection("users").whereArrayContains("following", sellerId).get()
-                .addOnSuccessListener(queryDocumentSnapshots -> {
-                    if (!queryDocumentSnapshots.isEmpty()) {
-                        for (com.google.firebase.firestore.DocumentSnapshot doc : queryDocumentSnapshots) {
-                            String followerId = doc.getString("userId");
-                            // Send the automated message
-                            sendAutomatedMessage(sellerId, followerId, messageContent);
+        db.collection("users").document(currentUserId).collection("followers")
+                .get()
+                .addOnSuccessListener(snapshots -> {
+                    if (!snapshots.isEmpty()) {
+                        for (com.google.firebase.firestore.DocumentSnapshot doc : snapshots) {
+                            String followerId = doc.getId();
+
+                            sendAutomatedMessage(currentUserId, followerId, messageContent);
                         }
                     }
+                })
+                .addOnFailureListener(e -> {
+                    e.printStackTrace();
                 });
     }
 

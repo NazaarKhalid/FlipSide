@@ -20,7 +20,7 @@
 
             <item
                 android:id="@+id/menu_settings"
-                android:icon="@android:drawable/ic_menu_preferences"
+                android:icon="@drawable/ic_settings"
                 android:title="Settings"/>
 
             <item

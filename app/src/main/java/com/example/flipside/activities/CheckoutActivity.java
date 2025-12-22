@@ -5,6 +5,8 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
+import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -14,7 +16,11 @@ import com.example.flipside.R;
 import com.example.flipside.models.Address;
 import com.example.flipside.models.CartItem;
 import com.example.flipside.models.Order;
+import com.example.flipside.services.EasyPaisaAdapter;
+import com.example.flipside.services.IPaymentGateway;
+import com.example.flipside.services.SadaPayAdapter;
 import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.firestore.FieldValue;
 import com.google.firebase.firestore.FirebaseFirestore;
 import com.google.firebase.firestore.QueryDocumentSnapshot;
 import com.google.firebase.firestore.WriteBatch;
@@ -30,12 +36,12 @@ public class CheckoutActivity extends AppCompatActivity {
     private EditText etAddress, etCity, etPhone;
     private TextView tvTotal;
     private Button btnPlaceOrder;
+    private RadioGroup radioGroupPayment; // New UI
 
     private FirebaseFirestore db;
     private FirebaseAuth mAuth;
     private String userId;
-    private double totalPrice; // This is the total displayed, but we recalculate per seller
-
+    private double totalPrice;
     private List<CartItem> itemsToOrder;
 
     @Override
@@ -59,13 +65,12 @@ public class CheckoutActivity extends AppCompatActivity {
         btnPlaceOrder.setEnabled(false);
         btnPlaceOrder.setText("Loading Cart...");
 
-        // Display total from previous screen just for UI
         totalPrice = getIntent().getDoubleExtra("totalPrice", 0.0);
         tvTotal.setText("PKR " + totalPrice);
 
         loadCartItems();
 
-        btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnPlaceOrder.setOnClickListener(v -> handleCheckoutProcess());
     }
 
     private void initViews() {
@@ -74,6 +79,7 @@ public class CheckoutActivity extends AppCompatActivity {
         etPhone = findViewById(R.id.etPhone);
         tvTotal = findViewById(R.id.tvCheckoutTotal);
         btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
+        radioGroupPayment = findViewById(R.id.radioGroupPayment); // New
     }
 
     private void loadCartItems() {
@@ -81,25 +87,20 @@ public class CheckoutActivity extends AppCompatActivity {
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     itemsToOrder.clear();
-
                     if (!queryDocumentSnapshots.isEmpty()) {
                         for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                             itemsToOrder.add(doc.toObject(CartItem.class));
                         }
                         btnPlaceOrder.setEnabled(true);
-                        btnPlaceOrder.setText("Confirm Order");
+                        btnPlaceOrder.setText("Confirm & Pay");
                     } else {
-                        Toast.makeText(this, "Error: Your cart appears empty.", Toast.LENGTH_LONG).show();
-                        btnPlaceOrder.setText("Cart Empty");
+                        Toast.makeText(this, "Cart Empty", Toast.LENGTH_SHORT).show();
+                        finish();
                     }
-                })
-                .addOnFailureListener(e -> {
-                    Toast.makeText(this, "Failed to load cart: " + e.getMessage(), Toast.LENGTH_SHORT).show();
-                    btnPlaceOrder.setText("Error Loading");
                 });
     }
 
-    private void placeOrder() {
+    private void handleCheckoutProcess() {
         String street = etAddress.getText().toString().trim();
         String city = etCity.getText().toString().trim();
         String phone = etPhone.getText().toString().trim();
@@ -109,82 +110,99 @@ public class CheckoutActivity extends AppCompatActivity {
             return;
         }
 
-        if (itemsToOrder.isEmpty()) {
-            Toast.makeText(this, "Cart data is missing.", Toast.LENGTH_SHORT).show();
-            return;
+        // 1. SELECT PAYMENT GATEWAY (Adapter Pattern)
+        IPaymentGateway paymentGateway;
+        int selectedId = radioGroupPayment.getCheckedRadioButtonId();
+
+        if (selectedId == R.id.rbSadaPay) {
+            paymentGateway = new SadaPayAdapter();
+        } else {
+            paymentGateway = new EasyPaisaAdapter();
         }
 
-        btnPlaceOrder.setEnabled(false);
-        btnPlaceOrder.setText("Processing...");
+        // 2. PROCESS PAYMENT (Simulated)
+        // In a real app, you would pass callbacks here.
+        // Since your interface is synchronous (boolean), we call it directly.
+        String tempOrderId = UUID.randomUUID().toString(); // ID for payment tracking
+        boolean paymentSuccess = paymentGateway.processPayment(totalPrice, tempOrderId);
 
-        // Create Shared Address Object
+        if (paymentSuccess) {
+            // If payment authorized, Proceed to update Database
+            placeOrderInFirestore(street, city, phone);
+        } else {
+            Toast.makeText(this, "Payment Failed. Try again.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void placeOrderInFirestore(String street, String city, String phone) {
+        btnPlaceOrder.setEnabled(false);
+        btnPlaceOrder.setText("Finalizing...");
+
         String newAddressId = UUID.randomUUID().toString();
         Address deliveryAddress = new Address(newAddressId, userId, street, city, "00000", true);
 
-        // --- STEP 1: GROUP ITEMS BY SELLER ID ---
+        // Group by Seller
         Map<String, List<CartItem>> sellerGroups = new HashMap<>();
-
         for (CartItem item : itemsToOrder) {
-            if (item.getProduct() != null) {
+            if (item.getProduct() != null && item.getProduct().getSellerId() != null) {
                 String sellerId = item.getProduct().getSellerId();
-                if (sellerId != null) {
-                    if (!sellerGroups.containsKey(sellerId)) {
-                        sellerGroups.put(sellerId, new ArrayList<>());
-                    }
-                    sellerGroups.get(sellerId).add(item);
+                if (!sellerGroups.containsKey(sellerId)) {
+                    sellerGroups.put(sellerId, new ArrayList<>());
                 }
+                sellerGroups.get(sellerId).add(item);
             }
         }
 
-        // --- STEP 2: BATCH WRITE TO FIRESTORE ---
         WriteBatch batch = db.batch();
 
+        // 3. CREATE ORDERS & DECREMENT STOCK
         for (Map.Entry<String, List<CartItem>> entry : sellerGroups.entrySet()) {
             String sellerId = entry.getKey();
             List<CartItem> sellerItems = entry.getValue();
 
-            // Calculate total for THIS specific seller
-            double sellerOrderTotal = 0;
+            double sellerTotal = 0;
             for (CartItem item : sellerItems) {
-                sellerOrderTotal += (item.getProduct().getPrice() * item.getQuantity());
+
+                // --- SAFETY CHECK ---
+                if (item.getProduct() == null || item.getProduct().getProductId() == null) {
+                    continue; // Skip invalid items to prevent crash/errors
+                }
+
+                sellerTotal += (item.getProduct().getPrice() * item.getQuantity());
+
+                String productId = item.getProduct().getProductId();
+                int qtyPurchased = item.getQuantity();
+
+                // Decrement Stock
+                batch.update(db.collection("products").document(productId),
+                        "stockQuantity", FieldValue.increment(-qtyPurchased));
             }
 
             String orderId = UUID.randomUUID().toString();
+            Order subOrder = new Order(orderId, userId, sellerId, sellerItems, sellerTotal, deliveryAddress);
 
-            // Create Order Object (Using the NEW Constructor with sellerId)
-            Order subOrder = new Order(
-                    orderId,
-                    userId,
-                    sellerId,       // <--- Passed correctly now
-                    sellerItems,
-                    sellerOrderTotal,
-                    deliveryAddress
-            );
-
-            // Add to batch
+            // Save Order
             batch.set(db.collection("orders").document(orderId), subOrder);
         }
 
-        // --- STEP 3: COMMIT BATCH ---
         batch.commit()
                 .addOnSuccessListener(aVoid -> clearCartAndFinish())
                 .addOnFailureListener(e -> {
                     btnPlaceOrder.setEnabled(true);
-                    btnPlaceOrder.setText("Confirm Order");
-                    Toast.makeText(this, "Order Failed: " + e.getMessage(), Toast.LENGTH_SHORT).show();
+                    btnPlaceOrder.setText("Confirm & Pay");
+                    Toast.makeText(this, "Order Error: " + e.getMessage(), Toast.LENGTH_SHORT).show();
                 });
     }
 
     private void clearCartAndFinish() {
+        // Clear Cart
         db.collection("carts").document(userId).collection("items")
                 .get()
                 .addOnSuccessListener(queryDocumentSnapshots -> {
                     for (QueryDocumentSnapshot doc : queryDocumentSnapshots) {
                         doc.getReference().delete();
                     }
-
-                    Toast.makeText(this, "Order Placed Successfully!", Toast.LENGTH_SHORT).show();
-
+                    Toast.makeText(this, "Order Placed & Stock Updated!", Toast.LENGTH_SHORT).show();
                     Intent intent = new Intent(CheckoutActivity.this, BuyerDashboardActivity.class);
                     intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
                     startActivity(intent);

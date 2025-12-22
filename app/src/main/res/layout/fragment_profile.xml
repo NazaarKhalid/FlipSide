@@ -259,5 +259,20 @@
             </androidx.cardview.widget.CardView>
         </GridLayout>
 
+        <Button
+            android:id="@+id/btnManageProducts"
+            android:layout_width="match_parent"
+            android:layout_height="55dp"
+            android:layout_marginHorizontal="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Manage My Products"
+            android:textColor="#FFFFFF"
+            android:backgroundTint="#5D4037"
+            android:visibility="gone"
+            android:drawableStart="@android:drawable/ic_menu_edit"
+            android:drawableTint="#FFFFFF"
+            android:paddingStart="20dp"
+            android:gravity="start|center_vertical"/>
+
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>

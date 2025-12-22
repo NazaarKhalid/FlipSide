@@ -10,6 +10,8 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast; // Import Toast
+
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -49,6 +51,7 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
 
         if (item.getProduct() != null) {
             holder.tvName.setText(item.getProduct().getName());
+
             // Calculate price based on qty
             double totalItemPrice = item.getProduct().getPrice() * item.getQuantity();
             holder.tvPrice.setText("PKR " + totalItemPrice);
@@ -69,9 +72,22 @@ public class CartAdapter extends RecyclerView.Adapter<CartAdapter.CartViewHolder
             }
         }
 
-        // Action Listeners
-        holder.btnPlus.setOnClickListener(v -> listener.onQuantityChanged(position, item.getQuantity() + 1));
+        // --- FIXED: Stock Limit Check in Plus Button ---
+        holder.btnPlus.setOnClickListener(v -> {
+            int currentQty = item.getQuantity();
+            // Get the Max Stock allowed for this product
+            int maxStock = item.getProduct() != null ? item.getProduct().getStockQuantity() : 99;
 
+            if (currentQty < maxStock) {
+                // If we have stock, allow increment
+                listener.onQuantityChanged(position, currentQty + 1);
+            } else {
+                // If limit reached, show warning
+                Toast.makeText(context, "Only " + maxStock + " items available in stock!", Toast.LENGTH_SHORT).show();
+            }
+        });
+
+        // Minus Button Logic (Unchanged)
         holder.btnMinus.setOnClickListener(v -> {
             if (item.getQuantity() > 1) {
                 listener.onQuantityChanged(position, item.getQuantity() - 1);
