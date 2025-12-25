@@ -5,8 +5,10 @@
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
     app:cardCornerRadius="12dp"
-    app:cardElevation="4dp"
-    app:cardBackgroundColor="@android:color/white">
+    app:cardElevation="0dp"
+    app:cardBackgroundColor="@color/card_background"
+    app:strokeColor="@color/border_color"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -18,21 +20,21 @@
             android:layout_width="match_parent"
             android:layout_height="140dp"
             android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_gallery"
-            android:background="#F5F5F5"/>
+            android:src="@drawable/ic_box"
+            android:background="#222222"/>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="8dp">
+            android:padding="12dp">
 
             <TextView
                 android:id="@+id/tvItemName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Product Name"
-                android:textColor="#5D4037"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"
                 android:maxLines="1"
                 android:ellipsize="end"
@@ -43,7 +45,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="PKR 0.00"
-                android:textColor="#388E3C"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp"
                 android:layout_marginTop="4dp"/>
         </LinearLayout>
@@ -55,7 +57,7 @@
             android:orientation="horizontal"
             android:padding="4dp"
             android:visibility="gone"
-            android:background="#EEEEEE">
+            android:background="#222222">
 
             <Button
                 android:id="@+id/btnEditProduct"
@@ -64,7 +66,7 @@
                 android:layout_weight="1"
                 android:text="Edit"
                 android:textSize="10sp"
-                android:textColor="#5D4037"
+                android:textColor="@color/white"
                 style="@style/Widget.MaterialComponents.Button.TextButton"/>
 
             <Button
@@ -74,7 +76,7 @@
                 android:layout_weight="1"
                 android:text="Del"
                 android:textSize="10sp"
-                android:textColor="#D32F2F"
+                android:textColor="#EF5350"
                 style="@style/Widget.MaterialComponents.Button.TextButton"/>
         </LinearLayout>
 

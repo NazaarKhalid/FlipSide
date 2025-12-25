@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5DC"
+    android:background="@color/app_background"
     android:fillViewport="true">
 
     <LinearLayout
@@ -18,8 +18,10 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="4dp"
-            app:cardBackgroundColor="@color/white">
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:strokeColor="@color/border_color"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -39,9 +41,9 @@
                         android:id="@+id/ivProfilePic"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:src="@android:drawable/sym_def_app_icon"
+                        android:src="@drawable/ic_person"
                         android:scaleType="centerCrop"
-                        android:background="#E0E0E0"/>
+                        android:background="#222222"/>
                 </androidx.cardview.widget.CardView>
 
                 <TextView
@@ -51,7 +53,7 @@
                     android:text="Loading..."
                     android:textSize="22sp"
                     android:textStyle="bold"
-                    android:textColor="#5D4037"
+                    android:textColor="@color/text_primary"
                     android:layout_marginTop="12dp"/>
 
                 <TextView
@@ -60,7 +62,7 @@
                     android:layout_height="wrap_content"
                     android:text="user@example.com"
                     android:textSize="14sp"
-                    android:textColor="#8D6E63"
+                    android:textColor="@color/text_secondary"
                     android:layout_marginTop="4dp"/>
 
                 <Button
@@ -69,8 +71,8 @@
                     android:layout_height="40dp"
                     android:text="Edit Profile"
                     android:textSize="12sp"
-                    android:textColor="#5D4037"
-                    android:backgroundTint="#F5F5DC"
+                    android:textColor="@color/text_primary"
+                    android:backgroundTint="@color/app_background"
                     android:layout_marginTop="16dp"
                     style="@style/Widget.MaterialComponents.Button.TextButton"/>
             </LinearLayout>
@@ -99,13 +101,13 @@
                     android:text="0"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="#5D4037"/>
+                    android:textColor="@color/text_primary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Followers"
-                    android:textColor="#8D6E63"/>
+                    android:textColor="@color/text_secondary"/>
             </LinearLayout>
 
             <LinearLayout
@@ -123,13 +125,13 @@
                     android:text="0"
                     android:textSize="24sp"
                     android:textStyle="bold"
-                    android:textColor="#5D4037"/>
+                    android:textColor="@color/text_primary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Following"
-                    android:textColor="#8D6E63"/>
+                    android:textColor="@color/text_secondary"/>
             </LinearLayout>
         </LinearLayout>
 
@@ -139,7 +141,7 @@
             android:text="Seller Dashboard"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#5D4037"
+            android:textColor="@color/text_primary"
             android:layout_marginStart="20dp"
             android:layout_marginBottom="8dp"/>
 
@@ -149,8 +151,10 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
-            app:cardBackgroundColor="#8D6E63"
+            app:cardElevation="0dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:strokeColor="@color/border_color"
+            app:strokeWidth="1dp"
             android:visibility="visible">
 
             <LinearLayout
@@ -166,14 +170,14 @@
                     android:text="Start Your Business"
                     android:textSize="20sp"
                     android:textStyle="bold"
-                    android:textColor="#FFFFFF"/>
+                    android:textColor="@color/text_primary"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Join FlipSide sellers and reach thousands of buyers today."
                     android:gravity="center"
-                    android:textColor="#EFEFEF"
+                    android:textColor="@color/text_secondary"
                     android:layout_marginTop="8dp"/>
 
                 <Button
@@ -181,8 +185,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Become a Seller"
-                    android:textColor="#5D4037"
-                    android:backgroundTint="#FFFFFF"
+                    android:textColor="@color/black"
+                    android:backgroundTint="@color/white"
                     android:layout_marginTop="16dp"/>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
@@ -203,7 +207,9 @@
                 android:layout_rowWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="@color/white">
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -214,7 +220,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Revenue"
-                        android:textColor="#8D6E63"/>
+                        android:textColor="@color/text_secondary"/>
                     <TextView
                         android:id="@+id/tvRevenue"
                         android:layout_width="wrap_content"
@@ -222,7 +228,7 @@
                         android:text="$0.00"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="#388E3C"
+                        android:textColor="@color/white"
                         android:layout_marginTop="4dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -234,7 +240,9 @@
                 android:layout_rowWeight="1"
                 android:layout_margin="8dp"
                 app:cardCornerRadius="12dp"
-                app:cardBackgroundColor="@color/white">
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeColor="@color/border_color"
+                app:strokeWidth="1dp">
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -245,7 +253,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Items Sold"
-                        android:textColor="#8D6E63"/>
+                        android:textColor="@color/text_secondary"/>
                     <TextView
                         android:id="@+id/tvActiveProducts"
                         android:layout_width="wrap_content"
@@ -253,7 +261,7 @@
                         android:text="0"
                         android:textSize="18sp"
                         android:textStyle="bold"
-                        android:textColor="#5D4037"
+                        android:textColor="@color/text_primary"
                         android:layout_marginTop="4dp"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
@@ -266,11 +274,13 @@
             android:layout_marginHorizontal="16dp"
             android:layout_marginTop="16dp"
             android:text="Manage My Products"
-            android:textColor="#FFFFFF"
-            android:backgroundTint="#5D4037"
+            android:textColor="@color/white"
+            android:backgroundTint="@color/card_background"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp"
             android:visibility="gone"
             android:drawableStart="@android:drawable/ic_menu_edit"
-            android:drawableTint="#FFFFFF"
+            android:drawableTint="@color/white"
             android:paddingStart="20dp"
             android:gravity="start|center_vertical"/>
 

@@ -4,13 +4,13 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#F5F5DC">
+    android:background="@color/app_background">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:padding="16dp"
-        android:background="#FFFFFF"
+        android:background="@color/card_background"
         android:elevation="4dp"
         android:gravity="center_vertical">
 
@@ -18,15 +18,17 @@
             android:id="@+id/btnBack"
             android:layout_width="32dp"
             android:layout_height="32dp"
-            android:src="@android:drawable/ic_menu_revert"
-            app:tint="#5D4037"/>
+            android:src="@drawable/ic_back_arrow"
+            app:tint="@color/white"/>
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Manage Products"
             android:textSize="20sp"
+            android:fontFamily="@font/mystical_font"
             android:textStyle="bold"
-            android:textColor="#5D4037"
+            android:textColor="@color/text_primary"
             android:layout_marginStart="16dp"/>
     </LinearLayout>
 
@@ -36,6 +38,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:visibility="gone"
+        android:theme="@style/Theme.Material3.Dark"
         android:layout_marginTop="20dp"/>
 
     <TextView
@@ -44,6 +47,7 @@
         android:layout_height="wrap_content"
         android:text="You haven't posted any products yet."
         android:gravity="center"
+        android:textColor="@color/text_secondary"
         android:padding="20dp"
         android:visibility="gone"/>
 

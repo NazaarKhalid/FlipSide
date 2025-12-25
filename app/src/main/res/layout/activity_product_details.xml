@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5DC">
+    android:background="@color/app_background">
 
     <ScrollView
         android:layout_width="match_parent"
@@ -24,16 +24,19 @@
                     android:id="@+id/ivProductImage"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:src="@android:drawable/ic_menu_gallery"
-                    android:scaleType="centerCrop"/>
+                    android:src="@drawable/ic_box"
+                    android:scaleType="centerCrop"
+                    android:background="#222222"/>
+
                 <ImageView
                     android:id="@+id/btnBack"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
                     android:layout_margin="16dp"
-                    android:src="@android:drawable/ic_menu_revert"
-                    android:elevation="4dp"
-                    android:padding="8dp"/>
+                    android:src="@drawable/ic_back_arrow"
+                    android:background="@drawable/bg_search_rounded"
+                    android:padding="8dp"
+                    app:tint="@color/white"/>
             </FrameLayout>
 
             <LinearLayout
@@ -42,6 +45,8 @@
                 android:orientation="vertical"
                 android:padding="24dp"
                 android:layout_marginTop="-24dp"
+                android:background="@drawable/bg_search_rounded"
+                android:backgroundTint="@color/card_background"
                 android:elevation="8dp">
 
                 <TextView
@@ -50,8 +55,9 @@
                     android:layout_height="wrap_content"
                     android:text="Product Name"
                     android:textSize="26sp"
+                    android:fontFamily="@font/mystical_font"
                     android:textStyle="bold"
-                    android:textColor="#5D4037"/>
+                    android:textColor="@color/text_primary"/>
 
                 <TextView
                     android:id="@+id/tvProductPrice"
@@ -59,7 +65,7 @@
                     android:layout_height="wrap_content"
                     android:text="PKR 0.0"
                     android:textSize="22sp"
-                    android:textColor="#388E3C"
+                    android:textColor="@color/text_secondary"
                     android:textStyle="bold"
                     android:layout_marginTop="8dp"/>
 
@@ -71,14 +77,15 @@
                     android:gravity="center_vertical"
                     android:layout_marginTop="16dp"
                     android:padding="12dp"
+                    android:background="#222222"
                     android:clickable="true"
                     android:focusable="true">
 
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_menu_my_calendar"
-                        app:tint="#5D4037"/>
+                        android:src="@drawable/ic_person"
+                        app:tint="@color/white"/>
 
                     <TextView
                         android:id="@+id/tvSellerName"
@@ -86,7 +93,7 @@
                         android:layout_height="wrap_content"
                         android:text="View Seller Profile"
                         android:textStyle="bold"
-                        android:textColor="#5D4037"
+                        android:textColor="@color/text_primary"
                         android:layout_marginStart="12dp"/>
 
                     <View android:layout_width="0dp" android:layout_height="0dp" android:layout_weight="1"/>
@@ -94,8 +101,8 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:src="@android:drawable/ic_media_play"
-                        app:tint="#8D6E63"
+                        android:src="@drawable/ic_edit"
+                        app:tint="@color/text_secondary"
                         android:rotation="0"/>
                 </LinearLayout>
 
@@ -105,7 +112,7 @@
                     android:text="Description"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:textColor="#5D4037"
+                    android:textColor="@color/text_primary"
                     android:layout_marginTop="24dp"/>
 
                 <TextView
@@ -114,7 +121,7 @@
                     android:layout_height="wrap_content"
                     android:text="..."
                     android:textSize="16sp"
-                    android:textColor="#757575"
+                    android:textColor="@color/text_secondary"
                     android:layout_marginTop="8dp"/>
             </LinearLayout>
         </LinearLayout>
@@ -126,7 +133,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="#FFFFFF"
+        android:background="@color/card_background"
         android:elevation="16dp"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -136,8 +143,10 @@
             android:layout_height="55dp"
             android:layout_weight="1"
             android:text="Message"
-            android:backgroundTint="#FFFFFF"
-            android:textColor="#5D4037"
+            android:backgroundTint="@android:color/transparent"
+            android:textColor="@color/white"
+            app:strokeColor="@color/white"
+            app:strokeWidth="1dp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
 
         <Button
@@ -146,8 +155,8 @@
             android:layout_height="55dp"
             android:layout_weight="1.5"
             android:text="Add to Cart"
-            android:backgroundTint="#5D4037"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/white"
+            android:textColor="@color/black"
             android:layout_marginStart="8dp"/>
     </LinearLayout>
 </androidx.constraintlayout.widget.ConstraintLayout>
