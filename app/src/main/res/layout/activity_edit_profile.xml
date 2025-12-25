@@ -1,51 +1,78 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="24dp"
     android:gravity="center_horizontal"
-    android:background="#F5F5DC">
+    android:background="@color/app_background">
 
-    <ImageView
-        android:id="@+id/ivProfilePreview"
+    <androidx.cardview.widget.CardView
         android:layout_width="120dp"
         android:layout_height="120dp"
-        android:src="@android:drawable/sym_def_app_icon"
-        android:padding="2dp"/>
+        app:cardCornerRadius="60dp"
+        app:cardBackgroundColor="@color/card_background">
+
+        <ImageView
+            android:id="@+id/ivProfilePreview"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:src="@drawable/ic_person"
+            app:tint="@color/text_secondary"
+            android:padding="20dp"/>
+    </androidx.cardview.widget.CardView>
 
     <TextView
         android:id="@+id/btnChangePhoto"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Change Photo"
-        android:textColor="#5D4037"
+        android:textColor="@color/white"
         android:textStyle="bold"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="32dp"/>
 
-    <EditText
-        android:id="@+id/etName"
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Full Name"
-        android:minHeight="48dp"/>
+        app:hintTextColor="@color/white"
+        app:boxStrokeColor="@color/white"
+        android:layout_marginBottom="16dp">
 
-    <EditText
-        android:id="@+id/etPhone"
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <com.google.android.material.textfield.TextInputLayout
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Phone Number"
-        android:inputType="phone"
-        android:layout_marginTop="16dp"
-        android:minHeight="48dp"/>
+        app:hintTextColor="@color/white"
+        app:boxStrokeColor="@color/white"
+        android:layout_marginBottom="24dp">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPhone"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/text_primary"
+            android:inputType="phone"/>
+    </com.google.android.material.textfield.TextInputLayout>
 
     <Button
         android:id="@+id/btnSave"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="60dp"
         android:text="Save Changes"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="#5D4037"/>
+        android:textColor="@color/black"
+        android:layout_marginTop="16dp"
+        android:backgroundTint="@color/white"/>
 
 </LinearLayout>
