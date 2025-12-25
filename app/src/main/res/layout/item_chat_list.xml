@@ -21,7 +21,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:src="@drawable/ic_person"
-            app:tint="@color/text_secondary"
+
             android:padding="8dp"
             android:scaleType="centerCrop"/>
     </androidx.cardview.widget.CardView>
