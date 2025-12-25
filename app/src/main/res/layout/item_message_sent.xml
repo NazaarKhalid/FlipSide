@@ -9,9 +9,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#DCF8C6"
+        android:background="@drawable/bg_search_rounded"
+        android:backgroundTint="@color/white"
         android:padding="12dp"
-        android:backgroundTint="#5D4037"
         android:elevation="2dp">
 
         <TextView
@@ -19,7 +19,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hello!"
-            android:textColor="#FFFFFF"
+            android:textColor="@color/black"
+            android:textStyle="bold"
             android:textSize="16sp"/>
 
         <TextView
@@ -28,7 +29,8 @@
             android:layout_height="wrap_content"
             android:text="10:00 AM"
             android:textSize="10sp"
-            android:textColor="#D7CCC8"
-            android:layout_gravity="end"/>
+            android:textColor="#666666"
+            android:layout_gravity="end"
+            android:layout_marginTop="4dp"/>
     </LinearLayout>
 </LinearLayout>

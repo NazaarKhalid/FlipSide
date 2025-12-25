@@ -9,7 +9,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:background="#FFFFFF"
+        android:background="@drawable/bg_search_rounded"
+        android:backgroundTint="@color/card_background"
         android:padding="12dp"
         android:elevation="2dp">
 
@@ -18,7 +19,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Hi there!"
-            android:textColor="#000000"
+            android:textColor="@color/text_primary"
             android:textSize="16sp"/>
 
         <TextView
@@ -27,6 +28,7 @@
             android:layout_height="wrap_content"
             android:text="10:01 AM"
             android:textSize="10sp"
-            android:textColor="#757575"/>
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="4dp"/>
     </LinearLayout>
 </LinearLayout>
