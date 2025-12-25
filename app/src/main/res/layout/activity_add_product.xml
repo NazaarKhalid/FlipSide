@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F5DC"
+    android:background="@color/app_background"
     android:padding="16dp">
 
     <LinearLayout
@@ -16,15 +16,16 @@
             android:layout_height="wrap_content"
             android:text="New Product"
             android:textSize="24sp"
+            android:fontFamily="@font/mystical_font"
             android:textStyle="bold"
-            android:textColor="#5D4037"
+            android:textColor="@color/text_primary"
             android:layout_marginBottom="16dp"/>
 
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:layout_marginBottom="16dp"
-            android:background="#EFEFEF">
+            android:background="#222222">
 
             <ImageView
                 android:id="@+id/ivProductImage"
@@ -32,7 +33,7 @@
                 android:layout_height="match_parent"
                 android:scaleType="centerCrop"
                 android:src="@android:drawable/ic_menu_camera"
-                app:tint="#BDBDBD"/>
+                app:tint="#666666"/>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -40,19 +41,23 @@
                 android:text="Tap to add image"
                 android:layout_gravity="center|bottom"
                 android:layout_marginBottom="8dp"
-                android:textColor="#757575"/>
+                android:textColor="@color/text_hint"/>
         </FrameLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Product Name"
+            app:hintTextColor="@color/white"
+            app:boxStrokeColor="@color/white"
             android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:textColor="@color/text_primary"
                 android:inputType="textCapWords"/>
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -63,29 +68,37 @@
             android:baselineAligned="false">
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="Price (PKR)"
+                app:hintTextColor="@color/white"
+                app:boxStrokeColor="@color/white"
                 android:layout_marginEnd="8dp">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etPrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
                     android:inputType="numberDecimal"/>
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
+                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Stock Qty">
+                android:hint="Stock Qty"
+                app:hintTextColor="@color/white"
+                app:boxStrokeColor="@color/white">
 
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etStock"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:textColor="@color/text_primary"
                     android:inputType="number"/>
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
@@ -95,7 +108,7 @@
             android:layout_height="wrap_content"
             android:text="Category"
             android:layout_marginTop="8dp"
-            android:textColor="#5D4037"/>
+            android:textColor="@color/text_secondary"/>
 
         <RadioGroup
             android:id="@+id/rgCategory"
@@ -103,15 +116,18 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginBottom="8dp">
-            <RadioButton android:id="@+id/rbClothing" android:text="Clothing" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-            <RadioButton android:id="@+id/rbShoes" android:text="Shoes" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
-            <RadioButton android:id="@+id/rbElectronics" android:text="Electronics" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbClothing" android:text="Clothing" android:textColor="@color/text_primary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbShoes" android:text="Shoes" android:textColor="@color/text_primary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
+            <RadioButton android:id="@+id/rbElectronics" android:text="Electronics" android:textColor="@color/text_primary" android:layout_width="wrap_content" android:layout_height="wrap_content"/>
         </RadioGroup>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Delivery Charges (PKR)"
+            app:hintTextColor="@color/white"
+            app:boxStrokeColor="@color/white"
             android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -119,13 +135,17 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="numberDecimal"
+                android:textColor="@color/text_primary"
                 android:text="0"/>
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Description"
+            app:hintTextColor="@color/white"
+            app:boxStrokeColor="@color/white"
             android:layout_marginBottom="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -133,6 +153,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textMultiLine"
+                android:textColor="@color/text_primary"
                 android:minLines="3"
                 android:gravity="top"/>
         </com.google.android.material.textfield.TextInputLayout>
@@ -142,8 +163,8 @@
             android:layout_width="match_parent"
             android:layout_height="50dp"
             android:text="Save Product"
-            android:backgroundTint="#5D4037"
-            android:textColor="#FFFFFF"/>
+            android:backgroundTint="@color/white"
+            android:textColor="@color/black"/>
 
     </LinearLayout>
 </ScrollView>
